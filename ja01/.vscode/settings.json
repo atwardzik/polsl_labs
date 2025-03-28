@@ -1,0 +1,12 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/mnt/c/Artur/ps_asm",
+            "binaryPath": "/mnt/c/Artur/ps_asm/a.out",
+            "binaryArgs": []
+        }
+],
+"files.associations": {
+        "stdint.h": "c"
+}
+}
