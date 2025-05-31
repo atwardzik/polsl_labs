@@ -3,6 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+void print_error(const char *format, ...) {
+        char buffer[256];
+
+        va_list args;
+        va_start(args, format);
+        vsnprintf(buffer, 256, format, args);
+
+        perror(buffer);
+
+        va_end(args);
+}
+
+
 /*
  * Grammar
  * */
@@ -86,6 +99,8 @@ void append_code(struct GeneratedAssembly *assembly, const char *appended_format
 
         size_t current_length = strlen(assembly->code);
         vsnprintf(assembly->code + current_length, assembly->length - current_length, appended_format, args);
+
+        va_end(args);
 }
 
 struct VariableDescriptor {
@@ -103,10 +118,10 @@ struct VariableDescriptorTable {
 };
 
 struct VariableDescriptorTable *create_variable_descriptor_table(size_t size) {
-        auto descriptors = (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor) * size);
+        auto descriptors = (struct VariableDescriptor **) malloc(sizeof(struct VariableDescriptor) * size);
 
         auto descriptor_table = (struct VariableDescriptorTable *) malloc(sizeof(struct VariableDescriptorTable));
-        descriptor_table->var_desc = &descriptors;
+        descriptor_table->var_desc = descriptors;
         descriptor_table->size = size;
 
         return descriptor_table;
@@ -114,6 +129,8 @@ struct VariableDescriptorTable *create_variable_descriptor_table(size_t size) {
 
 struct VariableDescriptor *get_variable_position(struct VariableDescriptorTable *descriptors, const char *name) {
         for (size_t i = 0; i < descriptors->size; ++i) {
+                printf("%zu. %s\n", i, descriptors->var_desc[i]->variable_name);
+
                 if (strcmp(descriptors->var_desc[i]->variable_name, name) == 0) {
                         return descriptors->var_desc[i];
                 }
@@ -126,26 +143,28 @@ struct VariableDescriptor *get_variable_position(struct VariableDescriptorTable 
  * Generate assembly code for expressions
  *
  * @param: assembly     generated code
- * @return: where the result is stored.
+ * @return: register where the result is stored.
  * */
-struct VariableDescriptor *visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr,
-                                     struct VariableDescriptorTable *descriptors) {
-        if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
-                auto operand = expr->unary.operand->leaf_name;
-                auto descriptor = get_variable_position(descriptors, operand);
+int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptorTable *descriptors) {
+        if (expr->type == EXPR_LEAF) {
+                auto descriptor = get_variable_position(descriptors, expr->leaf_name);
 
-                int destination_register = 0;
-                if (descriptor->position == SP_RELATIVE) {
-                        append_code(assembly, "ldr x0, [sp, #%i]", descriptor->sp_offset);
-                }
-                else if (descriptor->position == REG) {
-                        destination_register = descriptor->reg;
+                if (descriptor == nullptr) {
+                        print_error("[E] no such variable %s in a scope", expr->leaf_name);
+                        exit(-1);
                 }
 
-                append_code(assembly, "cmp %s, #0\nbeq .one\nmov %s, #0\nb .end\n.one:\nmov %s, #1\n.end:\n",
+                append_code(assembly, "ldr x0, [sp, #%zu]\n", descriptor->sp_offset);
+
+                return 0;
+        }
+        else if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
+                int destination_register = visit_expr(assembly, expr->unary.operand, descriptors);
+
+                append_code(assembly, "cmp X%i, #0\nbeq .one\nmov X%i, #0\nb .end\n.one:\nmov X%i, #1\n.end:\n",
                             destination_register, destination_register, destination_register);
 
-                return {.position = REG, .reg = destination_register, .variable_name = ""};
+                return destination_register;
         }
         else if (expr->type == EXPR_BINARY) {
                 auto left_assembly = create_assembly_buffer(1024);
@@ -153,9 +172,11 @@ struct VariableDescriptor *visit_expr(struct GeneratedAssembly *assembly, struct
 
                 visit_expr(left_assembly, expr->binary.right, descriptors);
                 visit_expr(right_assembly, expr->binary.right, descriptors);
+
+                return 0;
         }
 
-        return nullptr;
+        return -1;
 }
 
 char *visit_function(struct Function *fn) {
@@ -177,7 +198,7 @@ char *visit_function(struct Function *fn) {
 
         const char *save_reg = "str x%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(int) * fn->parameter_count;
-        for (size_t i = 0; i < fn->parameter_count; ++i) {
+        for (int i = 0; i < fn->parameter_count; ++i) {
                 if (i == 4) {
                         break;
                 }
@@ -185,39 +206,38 @@ char *visit_function(struct Function *fn) {
                 size_t variable_offset = total_offset - i * sizeof(int);
 
                 append_code(assembly, save_reg, i, variable_offset);
-                descriptors->var_desc[i] = &((struct VariableDescriptor) {.position = SP_RELATIVE,
-                                                                          .sp_offset = variable_offset,
-                                                                          .variable_name = fn->param_list[i]});
+
+                auto descriptor = (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor));
+                descriptor->position = SP_RELATIVE;
+                descriptor->sp_offset = variable_offset;
+                descriptor->variable_name = fn->param_list[i];
+
+                descriptors->var_desc[i] = descriptor;
         }
 
         if (fn->parameter_count > 4) {
                 size_t stack_parameters_offset = stack_shift;
-                for (size_t i = 4; i < fn->parameter_count; ++i) {
-                        // LINK REGISTER
+                for (int i = 4; i < fn->parameter_count; ++i) {
+                        auto descriptor = (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor));
+                        descriptor->position = SP_RELATIVE;
+                        descriptor->sp_offset = stack_parameters_offset + i * sizeof(int);
+                        descriptor->variable_name = fn->param_list[i];
+
+                        descriptors->var_desc[i] = descriptor;
                 }
         }
 
-        // last arguments are already on the stack, but at different offset
-
-
-        if (fn->expr->type == EXPR_LEAF) {
-                // identity function, argument already in r0
-                append_code(assembly, "bx lr\n");
-        }
-        else {
-                visit_expr(assembly, fn->expr, descriptors);
-        }
-
+        visit_expr(assembly, fn->expr, descriptors);
+        append_code(assembly, "bx lr\n");
 
         char *code = assembly->code;
         free(assembly);
+        for (size_t i = 0; i < descriptors->size; ++i) {
+                free(descriptors->var_desc[i]);
+        }
+        free(descriptors->var_desc);
         free(descriptors);
         return code;
-
-cleanup:
-        free(assembly->code);
-        free(assembly);
-        return nullptr;
 }
 
 int main(void) {
@@ -231,7 +251,13 @@ int main(void) {
                         .leaf_name = "y",
         };
 
-        struct Expr fn_body = {
+        struct Expr unary_expr = {
+                        .type = EXPR_UNARY,
+                        .operator= OP_NEG,
+                        .unary = {&leaf_left},
+        };
+
+        struct Expr binary_expr = {
                         .type = EXPR_BINARY,
                         .operator= OP_ADD,
                         .binary = {&leaf_left, &leaf_right},
@@ -239,17 +265,26 @@ int main(void) {
         };
 
         char *fn_params[] = {"x", "y"};
-        struct Function fn = {fn_params, 2, "foo", &fn_body};
+        struct Function fn_bin_expr = {fn_params, 2, "foo", &binary_expr};
+        struct Function fn_unary_expr = {fn_params, 2, "bar", &unary_expr};
 
-        printf("Left function operand is: %s\n", fn.expr->binary.left->leaf_name);
-        printf("Right function operand is: %s\n", fn.expr->binary.right->leaf_name);
 
-        char *assembly = visit_function(&fn);
+        puts("Unary Expression `bar(x,y): !x`: \n");
+        char *assembly = visit_function(&fn_unary_expr);
         if (assembly) {
                 printf("Generated assembly: \n\n%s\n", assembly);
 
                 free(assembly);
         }
+
+#if 0
+        assembly = visit_function(&fn_bin_expr);
+        if (assembly) {
+                printf("Generated assembly: \n\n%s\n", assembly);
+
+                free(assembly);
+        }
+#endif
 
         return 0;
 }
