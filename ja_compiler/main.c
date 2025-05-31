@@ -56,6 +56,16 @@ struct GeneratedAssembly {
         size_t length;
 };
 
+struct GeneratedAssembly *createAssemblyBuffer(size_t size) {
+        char *code = (char *) calloc(sizeof(char) * size, sizeof(char));
+
+        struct GeneratedAssembly *buffer = (struct GeneratedAssembly *) malloc(sizeof(struct GeneratedAssembly));
+        buffer->code = code;
+        buffer->length = size;
+
+        return buffer;
+}
+
 void resize_if_not_fit(struct GeneratedAssembly *assembly, size_t appended_length) {
         size_t code_length = strlen(assembly->code);
         if (code_length + appended_length >= assembly->length) {
@@ -78,28 +88,28 @@ void append_code(struct GeneratedAssembly *assembly, const char *appended_format
         vsnprintf(assembly->code + current_length, assembly->length - current_length, appended_format, args);
 }
 
-struct VariableLocation {
-        char *name;
+struct RegisterDescriptor {
         char *reg;
 };
 
-void visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableLocation **variableLocations) {
-        if (expr->type == EXPR_UNARY && expr->operator == OP_NEG) {
+void visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr) {
+        if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
                 append_code(assembly, "cmp %s, #0\nbeq .one\nmov %s, #0\nb .end\n.one:\nmov %s, #1\n.end:\n");
+                return;
         }
         else if (expr->type == EXPR_BINARY) {
-                
+
+                // visitExpr(&right_side_assembly, expr->binary.right);
         }
 }
 
 char *visitFunction(struct Function *fn) {
-        char *code = (char *) calloc(sizeof(char) * 1024, sizeof(char));
-        struct GeneratedAssembly assembly = {code, 1024};
+        auto assembly = createAssemblyBuffer(1024);
 
         const char *fn_header = ".global _%s\n.align 4\n%s:\n";
-        append_code(&assembly, fn_header, fn->name, fn->name);
+        append_code(assembly, fn_header, fn->name, fn->name);
 
-        //calling convention in registers, r0, r1, r2, r3, then stack
+        // calling convention in registers, r0, r1, r2, r3, then stack
         if (fn->parameter_count > 4) {
                 perror("[E] Only 4 arguments supported.\n");
                 goto cleanup;
@@ -107,18 +117,20 @@ char *visitFunction(struct Function *fn) {
 
         if (fn->expr->type == EXPR_LEAF) {
                 // identity function, argument already in r0
-                append_code(&assembly, "bx lr\n");
+                append_code(assembly, "bx lr\n");
         }
         else {
-                visitExpr(&assembly, fn->expr, nullptr);
+                //visitExpr(assembly, fn->expr);
         }
 
 
-
-        return assembly.code;
+        char *code = assembly->code;
+        free(assembly);
+        return code;
 
 cleanup:
-        free(assembly.code);
+        free(assembly->code);
+        free(assembly);
         return nullptr;
 }
 
