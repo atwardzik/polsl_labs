@@ -161,19 +161,30 @@ int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct Var
         else if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
                 int destination_register = visit_expr(assembly, expr->unary.operand, descriptors);
 
-                append_code(assembly, "cmp X%i, #0\nbeq .one\nmov X%i, #0\nb .end\n.one:\nmov X%i, #1\n.end:\n",
+                append_code(assembly, "cmp x%i, #0\nbeq .one\nmov x%i, #0\nb .end\n.one:\nmov x%i, #1\n.end:\n",
                             destination_register, destination_register, destination_register);
 
                 return destination_register;
         }
         else if (expr->type == EXPR_BINARY) {
-                auto left_assembly = create_assembly_buffer(1024);
-                auto right_assembly = create_assembly_buffer(1024);
+                int first_destination_register = visit_expr(assembly, expr->binary.left, descriptors);
+                append_code(assembly, "mov x1, x0\n");
 
-                visit_expr(left_assembly, expr->binary.right, descriptors);
-                visit_expr(right_assembly, expr->binary.right, descriptors);
+                int second_destination_register = visit_expr(assembly, expr->binary.right, descriptors);
 
-                return 0;
+                switch (expr->operator) {
+                        case OP_ADD:
+                                append_code(assembly, "add x1, x1, x%i\n", second_destination_register);
+                                break;
+                        case OP_SUB:
+                                break;
+                        case OP_MUL:
+                                break;
+                        case OP_NEG:
+                                break;
+                }
+
+                return 1;
         }
 
         return -1;
@@ -227,8 +238,11 @@ char *visit_function(struct Function *fn) {
                 }
         }
 
-        visit_expr(assembly, fn->expr, descriptors);
-        append_code(assembly, "bx lr\n");
+        int ret_pos = visit_expr(assembly, fn->expr, descriptors);
+        if (ret_pos) {
+                append_code(assembly, "mov x0, x%i\n", ret_pos);
+        }
+        append_code(assembly, "ret\n");
 
         char *code = assembly->code;
         free(assembly);
@@ -274,17 +288,27 @@ int main(void) {
         if (assembly) {
                 printf("Generated assembly: \n\n%s\n", assembly);
 
+                FILE *f = fopen("output.s", "w");
+                if (f) {
+                        fputs(assembly, f);
+                        fclose(f);
+                }
+
                 free(assembly);
         }
 
-#if 0
         assembly = visit_function(&fn_bin_expr);
         if (assembly) {
                 printf("Generated assembly: \n\n%s\n", assembly);
 
+                FILE *f = fopen("output1.s", "w");
+                if (f) {
+                        fputs(assembly, f);
+                        fclose(f);
+                }
+
                 free(assembly);
         }
-#endif
 
         return 0;
 }
