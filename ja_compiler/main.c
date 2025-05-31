@@ -56,7 +56,7 @@ struct GeneratedAssembly {
         size_t length;
 };
 
-struct GeneratedAssembly *createAssemblyBuffer(size_t size) {
+struct GeneratedAssembly *create_assembly_buffer(size_t size) {
         char *code = (char *) calloc(sizeof(char) * size, sizeof(char));
 
         struct GeneratedAssembly *buffer = (struct GeneratedAssembly *) malloc(sizeof(struct GeneratedAssembly));
@@ -97,29 +97,69 @@ struct VariableDescriptor {
         const char *variable_name;
 };
 
+struct VariableDescriptorTable {
+        struct VariableDescriptor **var_desc;
+        size_t size;
+};
+
+struct VariableDescriptorTable *create_variable_descriptor_table(size_t size) {
+        auto descriptors = (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor) * size);
+
+        auto descriptor_table = (struct VariableDescriptorTable *) malloc(sizeof(struct VariableDescriptorTable));
+        descriptor_table->var_desc = &descriptors;
+        descriptor_table->size = size;
+
+        return descriptor_table;
+}
+
+struct VariableDescriptor *get_variable_position(struct VariableDescriptorTable *descriptors, const char *name) {
+        for (size_t i = 0; i < descriptors->size; ++i) {
+                if (strcmp(descriptors->var_desc[i]->variable_name, name) == 0) {
+                        return descriptors->var_desc[i];
+                }
+        }
+
+        return nullptr;
+}
+
 /*
  * Generate assembly code for expressions
  *
- * Return: Register number where the result is stored.
+ * @param: assembly     generated code
+ * @return: where the result is stored.
  * */
-int visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptor **reg_desc) {
+struct VariableDescriptor *visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr,
+                                     struct VariableDescriptorTable *descriptors) {
         if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
-                append_code(assembly, "cmp %s, #0\nbeq .one\nmov %s, #0\nb .end\n.one:\nmov %s, #1\n.end:\n");
-                // return
+                auto operand = expr->unary.operand->leaf_name;
+                auto descriptor = get_variable_position(descriptors, operand);
+
+                int destination_register = 0;
+                if (descriptor->position == SP_RELATIVE) {
+                        append_code(assembly, "ldr x0, [sp, #%i]", descriptor->sp_offset);
+                }
+                else if (descriptor->position == REG) {
+                        destination_register = descriptor->reg;
+                }
+
+                append_code(assembly, "cmp %s, #0\nbeq .one\nmov %s, #0\nb .end\n.one:\nmov %s, #1\n.end:\n",
+                            destination_register, destination_register, destination_register);
+
+                return {.position = REG, .reg = destination_register, .variable_name = ""};
         }
         else if (expr->type == EXPR_BINARY) {
-                auto left_assembly = createAssemblyBuffer(1024);
-                auto right_assembly = createAssemblyBuffer(1024);
+                auto left_assembly = create_assembly_buffer(1024);
+                auto right_assembly = create_assembly_buffer(1024);
 
-                visitExpr(left_assembly, expr->binary.right, reg_desc);
-                visitExpr(right_assembly, expr->binary.right, reg_desc);
+                visit_expr(left_assembly, expr->binary.right, descriptors);
+                visit_expr(right_assembly, expr->binary.right, descriptors);
         }
 
-        return 0;
+        return nullptr;
 }
 
-char *visitFunction(struct Function *fn) {
-        auto assembly = createAssemblyBuffer(1024);
+char *visit_function(struct Function *fn) {
+        auto assembly = create_assembly_buffer(1024);
 
         const char *fn_header = ".global %s\n.align 4\n%s:\n";
         append_code(assembly, fn_header, fn->name, fn->name);
@@ -133,12 +173,11 @@ char *visitFunction(struct Function *fn) {
         size_t stack_shift = 16; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
         append_code(assembly, fn_entrance, stack_shift);
 
-        auto descriptors =
-                        (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor) * fn->parameter_count);
+        auto descriptors = create_variable_descriptor_table(fn->parameter_count);
 
         const char *save_reg = "str x%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(int) * fn->parameter_count;
-        for (int i = 0; i < fn->parameter_count; ++i) {
+        for (size_t i = 0; i < fn->parameter_count; ++i) {
                 if (i == 4) {
                         break;
                 }
@@ -146,14 +185,14 @@ char *visitFunction(struct Function *fn) {
                 size_t variable_offset = total_offset - i * sizeof(int);
 
                 append_code(assembly, save_reg, i, variable_offset);
-                descriptors[i] = (struct VariableDescriptor) {.position = SP_RELATIVE,
-                                                              .sp_offset = variable_offset,
-                                                              .variable_name = fn->param_list[i]};
+                descriptors->var_desc[i] = &((struct VariableDescriptor) {.position = SP_RELATIVE,
+                                                                          .sp_offset = variable_offset,
+                                                                          .variable_name = fn->param_list[i]});
         }
 
         if (fn->parameter_count > 4) {
                 size_t stack_parameters_offset = stack_shift;
-                for (int i = 4; i < fn->parameter_count; ++i) {
+                for (size_t i = 4; i < fn->parameter_count; ++i) {
                         // LINK REGISTER
                 }
         }
@@ -166,7 +205,7 @@ char *visitFunction(struct Function *fn) {
                 append_code(assembly, "bx lr\n");
         }
         else {
-                visitExpr(assembly, fn->expr, &descriptors);
+                visit_expr(assembly, fn->expr, descriptors);
         }
 
 
@@ -205,7 +244,7 @@ int main(void) {
         printf("Left function operand is: %s\n", fn.expr->binary.left->leaf_name);
         printf("Right function operand is: %s\n", fn.expr->binary.right->leaf_name);
 
-        char *assembly = visitFunction(&fn);
+        char *assembly = visit_function(&fn);
         if (assembly) {
                 printf("Generated assembly: \n\n%s\n", assembly);
 
