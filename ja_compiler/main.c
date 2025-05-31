@@ -88,9 +88,13 @@ void append_code(struct GeneratedAssembly *assembly, const char *appended_format
         vsnprintf(assembly->code + current_length, assembly->length - current_length, appended_format, args);
 }
 
-struct RegisterDescriptor {
-        enum { X0, X1, X2, X3 } reg;
-        const char *variable;
+struct VariableDescriptor {
+        enum { SP_RELATIVE, REG } position;
+        union {
+                enum { X0, X1, X2, X3, X4, X5, X6, X7 } reg;
+                size_t sp_offset;
+        };
+        const char *variable_name;
 };
 
 /*
@@ -98,7 +102,7 @@ struct RegisterDescriptor {
  *
  * Return: Register number where the result is stored.
  * */
-int visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr, struct RegisterDescriptor **reg_desc) {
+int visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptor **reg_desc) {
         if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
                 append_code(assembly, "cmp %s, #0\nbeq .one\nmov %s, #0\nb .end\n.one:\nmov %s, #1\n.end:\n");
                 // return
@@ -120,46 +124,55 @@ char *visitFunction(struct Function *fn) {
         const char *fn_header = ".global %s\n.align 4\n%s:\n";
         append_code(assembly, fn_header, fn->name, fn->name);
 
-        const char *fn_entrance = "sub sp, sp, %i\n";
-        //size_t stack_alignment = ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
-        append_code(assembly, fn_entrance, 16);
+        // Calling convention in registers, r0, r1, r2, r3, then stack.
+        //
+        // Function calls CANNOT be made (for now) from other function,
+        // due to the link register not being saved.
 
+        const char *fn_entrance = "sub sp, sp, #%i\n";
+        size_t stack_shift = 16; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
+        append_code(assembly, fn_entrance, stack_shift);
 
-        const char *save_reg = "str x%i, [sp, %i]\n";
+        auto descriptors =
+                        (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor) * fn->parameter_count);
+
+        const char *save_reg = "str x%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(int) * fn->parameter_count;
-        int i = 0;
-        while (i < fn->parameter_count && i < 4) {
+        for (int i = 0; i < fn->parameter_count; ++i) {
+                if (i == 4) {
+                        break;
+                }
+
                 size_t variable_offset = total_offset - i * sizeof(int);
 
                 append_code(assembly, save_reg, i, variable_offset);
-
-                i += 1;
+                descriptors[i] = (struct VariableDescriptor) {.position = SP_RELATIVE,
+                                                              .sp_offset = variable_offset,
+                                                              .variable_name = fn->param_list[i]};
         }
 
-        // calling convention in registers, r0, r1, r2, r3, then stack
         if (fn->parameter_count > 4) {
-                perror("[E] Only 4 arguments supported.\n");
-                goto cleanup;
+                size_t stack_parameters_offset = stack_shift;
+                for (int i = 4; i < fn->parameter_count; ++i) {
+                        // LINK REGISTER
+                }
         }
 
-        struct RegisterDescriptor r0 = {.reg = X0, .variable = fn->param_list[0]};
-        struct RegisterDescriptor r1 = {.reg = X1, .variable = fn->param_list[1]};
-        struct RegisterDescriptor r2 = {.reg = X2, .variable = fn->param_list[2]};
-        struct RegisterDescriptor r3 = {.reg = X3, .variable = fn->param_list[3]};
+        // last arguments are already on the stack, but at different offset
 
-        struct RegisterDescriptor *reg_desc[4] = {&r0, &r1, &r2, &r3};
 
         if (fn->expr->type == EXPR_LEAF) {
                 // identity function, argument already in r0
                 append_code(assembly, "bx lr\n");
         }
         else {
-                visitExpr(assembly, fn->expr, reg_desc);
+                visitExpr(assembly, fn->expr, &descriptors);
         }
 
 
         char *code = assembly->code;
         free(assembly);
+        free(descriptors);
         return code;
 
 cleanup:
