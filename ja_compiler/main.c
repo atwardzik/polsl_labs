@@ -89,25 +89,52 @@ void append_code(struct GeneratedAssembly *assembly, const char *appended_format
 }
 
 struct RegisterDescriptor {
-        char *reg;
+        enum { X0, X1, X2, X3 } reg;
+        const char *variable;
 };
 
-void visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr) {
+/*
+ * Generate assembly code for expressions
+ *
+ * Return: Register number where the result is stored.
+ * */
+int visitExpr(struct GeneratedAssembly *assembly, struct Expr *expr, struct RegisterDescriptor **reg_desc) {
         if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
                 append_code(assembly, "cmp %s, #0\nbeq .one\nmov %s, #0\nb .end\n.one:\nmov %s, #1\n.end:\n");
-                return;
+                // return
         }
         else if (expr->type == EXPR_BINARY) {
+                auto left_assembly = createAssemblyBuffer(1024);
+                auto right_assembly = createAssemblyBuffer(1024);
 
-                // visitExpr(&right_side_assembly, expr->binary.right);
+                visitExpr(left_assembly, expr->binary.right, reg_desc);
+                visitExpr(right_assembly, expr->binary.right, reg_desc);
         }
+
+        return 0;
 }
 
 char *visitFunction(struct Function *fn) {
         auto assembly = createAssemblyBuffer(1024);
 
-        const char *fn_header = ".global _%s\n.align 4\n%s:\n";
+        const char *fn_header = ".global %s\n.align 4\n%s:\n";
         append_code(assembly, fn_header, fn->name, fn->name);
+
+        const char *fn_entrance = "sub sp, sp, %i\n";
+        //size_t stack_alignment = ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
+        append_code(assembly, fn_entrance, 16);
+
+
+        const char *save_reg = "str x%i, [sp, %i]\n";
+        const size_t total_offset = sizeof(int) * fn->parameter_count;
+        int i = 0;
+        while (i < fn->parameter_count && i < 4) {
+                size_t variable_offset = total_offset - i * sizeof(int);
+
+                append_code(assembly, save_reg, i, variable_offset);
+
+                i += 1;
+        }
 
         // calling convention in registers, r0, r1, r2, r3, then stack
         if (fn->parameter_count > 4) {
@@ -115,12 +142,19 @@ char *visitFunction(struct Function *fn) {
                 goto cleanup;
         }
 
+        struct RegisterDescriptor r0 = {.reg = X0, .variable = fn->param_list[0]};
+        struct RegisterDescriptor r1 = {.reg = X1, .variable = fn->param_list[1]};
+        struct RegisterDescriptor r2 = {.reg = X2, .variable = fn->param_list[2]};
+        struct RegisterDescriptor r3 = {.reg = X3, .variable = fn->param_list[3]};
+
+        struct RegisterDescriptor *reg_desc[4] = {&r0, &r1, &r2, &r3};
+
         if (fn->expr->type == EXPR_LEAF) {
                 // identity function, argument already in r0
                 append_code(assembly, "bx lr\n");
         }
         else {
-                //visitExpr(assembly, fn->expr);
+                visitExpr(assembly, fn->expr, reg_desc);
         }
 
 
