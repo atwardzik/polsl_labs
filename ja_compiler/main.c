@@ -246,7 +246,7 @@ int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct Var
 char *visit_function(struct Function *fn) {
         auto assembly = create_assembly_buffer(1024);
 
-        const char *fn_header = ".global %s\n.align 4\n%s:\n";
+        const char *fn_header = ".global _%s\n.align 4\n_%s:\n";
         append_code(assembly, fn_header, fn->name, fn->name);
 
         // Calling convention in registers, r0, r1, r2, r3, then stack.
@@ -255,19 +255,19 @@ char *visit_function(struct Function *fn) {
         // due to the link register not being saved.
 
         const char *fn_entrance = "sub sp, sp, #%i\n";
-        size_t stack_shift = 16; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
+        size_t stack_shift = 32; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
         append_code(assembly, fn_entrance, stack_shift);
 
         auto var_descriptors = create_variable_descriptor_table(fn->parameter_count);
 
         const char *save_reg = "str x%i, [sp, #%i]\n";
-        const size_t total_offset = sizeof(int) * fn->parameter_count;
+        const size_t total_offset = sizeof(size_t) * fn->parameter_count;
         for (int i = 0; i < fn->parameter_count; ++i) {
                 if (i == 4) {
                         break;
                 }
 
-                size_t variable_offset = total_offset - (i + 1) * sizeof(int);
+                size_t variable_offset = total_offset - (i + 1) * sizeof(size_t);
 
                 append_code(assembly, save_reg, i, variable_offset);
 
@@ -284,7 +284,7 @@ char *visit_function(struct Function *fn) {
                 for (int i = 4; i < fn->parameter_count; ++i) {
                         auto descriptor = (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor));
                         descriptor->position = SP_RELATIVE;
-                        descriptor->sp_offset = stack_parameters_offset + i * sizeof(int);
+                        descriptor->sp_offset = stack_parameters_offset + i * sizeof(size_t);
                         descriptor->variable_name = fn->param_list[i];
 
                         var_descriptors->var_desc[i] = descriptor;
@@ -415,6 +415,9 @@ int main(void) {
                 FILE *f = fopen("output_binary_complex_multiple.s", "w");
                 if (f) {
                         fputs(assembly, f);
+
+                        fputs(".text\n.global _start\n.align 4\n_start:\nmov x0, #0\nmov x1, #31\nmov x2, #3\nmov x3, #9\nbl _cpx\nmov w8, #93\nsvc #0\n", f);
+
                         fclose(f);
                 }
 
