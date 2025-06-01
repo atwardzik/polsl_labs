@@ -129,8 +129,6 @@ struct VariableDescriptorTable *create_variable_descriptor_table(size_t size) {
 
 struct VariableDescriptor *get_variable_position(struct VariableDescriptorTable *descriptors, const char *name) {
         for (size_t i = 0; i < descriptors->size; ++i) {
-                printf("%zu. %s\n", i, descriptors->var_desc[i]->variable_name);
-
                 if (strcmp(descriptors->var_desc[i]->variable_name, name) == 0) {
                         return descriptors->var_desc[i];
                 }
@@ -168,23 +166,27 @@ int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct Var
         }
         else if (expr->type == EXPR_BINARY) {
                 int first_destination_register = visit_expr(assembly, expr->binary.left, descriptors);
-                append_code(assembly, "mov x1, x0\n");
+                append_code(assembly, "mov x1, x0\n"); // TODO: here it cannot be hardcoded; if the expr is recursive it
+                                                       // breaks after second recursion forgetting the value
 
                 int second_destination_register = visit_expr(assembly, expr->binary.right, descriptors);
 
                 switch (expr->operator) {
                         case OP_ADD:
-                                append_code(assembly, "add x1, x1, x%i\n", second_destination_register);
+                                append_code(assembly, "add x0, x1, x%i\n", second_destination_register);
                                 break;
                         case OP_SUB:
+                                append_code(assembly, "sub x0, x1, x%i\n", second_destination_register);
                                 break;
                         case OP_MUL:
+                                append_code(assembly, "mul x0, x1, x%i\n", second_destination_register);
                                 break;
                         case OP_NEG:
+                        default:
                                 break;
                 }
 
-                return 1;
+                return 0;
         }
 
         return -1;
@@ -214,7 +216,7 @@ char *visit_function(struct Function *fn) {
                         break;
                 }
 
-                size_t variable_offset = total_offset - i * sizeof(int);
+                size_t variable_offset = total_offset - (i + 1) * sizeof(int);
 
                 append_code(assembly, save_reg, i, variable_offset);
 
@@ -255,32 +257,58 @@ char *visit_function(struct Function *fn) {
 }
 
 int main(void) {
-        struct Expr leaf_left = {
+        // atom expressions - leafs
+        struct Expr leaf_x = {
                         .type = EXPR_LEAF,
                         .leaf_name = "x",
         };
 
-        struct Expr leaf_right = {
+        struct Expr leaf_y = {
                         .type = EXPR_LEAF,
                         .leaf_name = "y",
         };
 
+        struct Expr leaf_z = {
+                        .type = EXPR_LEAF,
+                        .leaf_name = "z",
+        };
+
+
+        struct Expr leaf_t = {
+                        .type = EXPR_LEAF,
+                        .leaf_name = "t",
+        };
+
+        // combined expressions - operations
+
         struct Expr unary_expr = {
                         .type = EXPR_UNARY,
                         .operator= OP_NEG,
-                        .unary = {&leaf_left},
+                        .unary = {&leaf_x},
         };
 
         struct Expr binary_expr = {
                         .type = EXPR_BINARY,
                         .operator= OP_ADD,
-                        .binary = {&leaf_left, &leaf_right},
+                        .binary = {&leaf_x, &leaf_y},
 
         };
 
-        char *fn_params[] = {"x", "y"};
+        struct Expr complex_expr = {
+                        .type = EXPR_BINARY,
+                        .operator= OP_ADD,
+                        .binary = {&leaf_y, &unary_expr},
+        };
+
+        struct Expr multiply_expr = {.type = EXPR_BINARY, .operator= OP_MUL, .binary = {&leaf_z, &leaf_t}};
+        struct Expr combined_expr = {.type = EXPR_BINARY, .operator= OP_SUB, .binary = {&complex_expr, &multiply_expr}};
+
+
+        char *fn_params[] = {"x", "y", "z", "t"};
         struct Function fn_bin_expr = {fn_params, 2, "foo", &binary_expr};
         struct Function fn_unary_expr = {fn_params, 2, "bar", &unary_expr};
+        struct Function fn_complex_expr = {fn_params, 2, "car", &complex_expr};
+        struct Function fn_multiple_args = {fn_params, 4, "cpx", &combined_expr};
 
 
         puts("Unary Expression `bar(x,y): !x`: \n");
@@ -288,7 +316,7 @@ int main(void) {
         if (assembly) {
                 printf("Generated assembly: \n\n%s\n", assembly);
 
-                FILE *f = fopen("output.s", "w");
+                FILE *f = fopen("output_unary.s", "w");
                 if (f) {
                         fputs(assembly, f);
                         fclose(f);
@@ -297,11 +325,12 @@ int main(void) {
                 free(assembly);
         }
 
+        puts("Binary Expression `foo(x,y): x + y`: \n");
         assembly = visit_function(&fn_bin_expr);
         if (assembly) {
                 printf("Generated assembly: \n\n%s\n", assembly);
 
-                FILE *f = fopen("output1.s", "w");
+                FILE *f = fopen("output_binary.s", "w");
                 if (f) {
                         fputs(assembly, f);
                         fclose(f);
@@ -309,6 +338,35 @@ int main(void) {
 
                 free(assembly);
         }
+
+        puts("Complex Expression `car(x,y): y + !x`: \n");
+        assembly = visit_function(&fn_complex_expr);
+        if (assembly) {
+                printf("Generated assembly: \n\n%s\n", assembly);
+
+                FILE *f = fopen("output_binary_complex.s", "w");
+                if (f) {
+                        fputs(assembly, f);
+                        fclose(f);
+                }
+
+                free(assembly);
+        }
+
+        puts("Combined Expression `cpx(x,y,z,t): y + !x - z * t`: \n");
+        assembly = visit_function(&fn_multiple_args);
+        if (assembly) {
+                printf("Generated assembly: \n\n%s\n", assembly);
+
+                FILE *f = fopen("output_binary_complex_multiple.s", "w");
+                if (f) {
+                        fputs(assembly, f);
+                        fclose(f);
+                }
+
+                free(assembly);
+        }
+
 
         return 0;
 }
