@@ -72,6 +72,10 @@ struct GeneratedAssembly {
 struct GeneratedAssembly *create_assembly_buffer(size_t size) {
         char *code = (char *) calloc(sizeof(char) * size, sizeof(char));
 
+        if (code == nullptr) {
+                return nullptr;
+        }
+
         struct GeneratedAssembly *buffer = (struct GeneratedAssembly *) malloc(sizeof(struct GeneratedAssembly));
         buffer->code = code;
         buffer->length = size;
@@ -117,8 +121,17 @@ struct VariableDescriptorTable {
         size_t size;
 };
 
+constexpr size_t REG_COUNT = 8;
+struct RegisterDescriptorTable {
+        bool reg_used[REG_COUNT];
+};
+
 struct VariableDescriptorTable *create_variable_descriptor_table(size_t size) {
         auto descriptors = (struct VariableDescriptor **) malloc(sizeof(struct VariableDescriptor) * size);
+
+        if (descriptors == nullptr) {
+                return nullptr;
+        }
 
         auto descriptor_table = (struct VariableDescriptorTable *) malloc(sizeof(struct VariableDescriptorTable));
         descriptor_table->var_desc = descriptors;
@@ -135,6 +148,20 @@ struct VariableDescriptor *get_variable_position(struct VariableDescriptorTable 
         }
 
         return nullptr;
+}
+
+struct RegisterDescriptorTable *create_register_descriptor_table() {
+        auto descriptors = (struct RegisterDescriptorTable *) malloc(sizeof(struct RegisterDescriptorTable));
+
+        if (descriptors == nullptr) {
+                return nullptr;
+        }
+
+        for (size_t i = 0; i < REG_COUNT; ++i) {
+                descriptors->reg_used[i] = false;
+        }
+
+        return descriptors;
 }
 
 /*
