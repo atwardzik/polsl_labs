@@ -121,7 +121,7 @@ struct VariableDescriptorTable {
         size_t size;
 };
 
-constexpr size_t REG_COUNT = 8;
+constexpr int REG_COUNT = 8;
 struct RegisterDescriptorTable {
         bool reg_used[REG_COUNT];
 };
@@ -164,27 +164,41 @@ struct RegisterDescriptorTable *create_register_descriptor_table() {
         return descriptors;
 }
 
+int get_reg(struct RegisterDescriptorTable *descriptors) {
+        for (int i = 0; i < REG_COUNT; ++i) {
+                if (descriptors->reg_used[i] == false) {
+                        descriptors->reg_used[i] = true;
+                        return i;
+                }
+        }
+
+        return -1;
+}
+
 /*
  * Generate assembly code for expressions
  *
  * @param: assembly     generated code
  * @return: register where the result is stored.
  * */
-int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptorTable *descriptors) {
+int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptorTable *var_descriptors,
+               struct RegisterDescriptorTable *reg_descriptors) {
         if (expr->type == EXPR_LEAF) {
-                auto descriptor = get_variable_position(descriptors, expr->leaf_name);
+                auto descriptor = get_variable_position(var_descriptors, expr->leaf_name);
 
                 if (descriptor == nullptr) {
                         print_error("[E] no such variable %s in a scope", expr->leaf_name);
                         exit(-1);
                 }
 
-                append_code(assembly, "ldr x0, [sp, #%zu]\n", descriptor->sp_offset);
+                int destination_register = get_reg(reg_descriptors);
 
-                return 0;
+                append_code(assembly, "ldr x%i, [sp, #%zu]\n", destination_register, descriptor->sp_offset);
+
+                return destination_register;
         }
         else if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
-                int destination_register = visit_expr(assembly, expr->unary.operand, descriptors);
+                int destination_register = visit_expr(assembly, expr->unary.operand, var_descriptors, reg_descriptors);
 
                 append_code(assembly, "cmp x%i, #0\nbeq .one\nmov x%i, #0\nb .end\n.one:\nmov x%i, #1\n.end:\n",
                             destination_register, destination_register, destination_register);
@@ -192,28 +206,38 @@ int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct Var
                 return destination_register;
         }
         else if (expr->type == EXPR_BINARY) {
-                int first_destination_register = visit_expr(assembly, expr->binary.left, descriptors);
-                append_code(assembly, "mov x1, x0\n"); // TODO: here it cannot be hardcoded; if the expr is recursive it
-                                                       // breaks after second recursion forgetting the value
+                int first_destination_register =
+                                visit_expr(assembly, expr->binary.left, var_descriptors, reg_descriptors);
 
-                int second_destination_register = visit_expr(assembly, expr->binary.right, descriptors);
+                int left_storage_register = get_reg(reg_descriptors);
+
+                if (first_destination_register != left_storage_register) {
+                        append_code(assembly, "mov x%i, x%i\n", left_storage_register, first_destination_register);
+                }
+
+
+                int second_destination_register =
+                                visit_expr(assembly, expr->binary.right, var_descriptors, reg_descriptors);
 
                 switch (expr->operator) {
                         case OP_ADD:
-                                append_code(assembly, "add x0, x1, x%i\n", second_destination_register);
+                                append_code(assembly, "add x%i, x%i, x%i\n", left_storage_register,
+                                            left_storage_register, second_destination_register);
                                 break;
                         case OP_SUB:
-                                append_code(assembly, "sub x0, x1, x%i\n", second_destination_register);
+                                append_code(assembly, "sub x%i, x%i, x%i\n", left_storage_register,
+                                            left_storage_register, second_destination_register);
                                 break;
                         case OP_MUL:
-                                append_code(assembly, "mul x0, x1, x%i\n", second_destination_register);
+                                append_code(assembly, "mul x%i, x%i, x%i\n", left_storage_register,
+                                            left_storage_register, second_destination_register);
                                 break;
                         case OP_NEG:
                         default:
                                 break;
                 }
 
-                return 0;
+                return left_storage_register;
         }
 
         return -1;
@@ -234,7 +258,7 @@ char *visit_function(struct Function *fn) {
         size_t stack_shift = 16; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
         append_code(assembly, fn_entrance, stack_shift);
 
-        auto descriptors = create_variable_descriptor_table(fn->parameter_count);
+        auto var_descriptors = create_variable_descriptor_table(fn->parameter_count);
 
         const char *save_reg = "str x%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(int) * fn->parameter_count;
@@ -252,7 +276,7 @@ char *visit_function(struct Function *fn) {
                 descriptor->sp_offset = variable_offset;
                 descriptor->variable_name = fn->param_list[i];
 
-                descriptors->var_desc[i] = descriptor;
+                var_descriptors->var_desc[i] = descriptor;
         }
 
         if (fn->parameter_count > 4) {
@@ -263,11 +287,13 @@ char *visit_function(struct Function *fn) {
                         descriptor->sp_offset = stack_parameters_offset + i * sizeof(int);
                         descriptor->variable_name = fn->param_list[i];
 
-                        descriptors->var_desc[i] = descriptor;
+                        var_descriptors->var_desc[i] = descriptor;
                 }
         }
 
-        int ret_pos = visit_expr(assembly, fn->expr, descriptors);
+
+        auto reg_descriptors = create_register_descriptor_table();
+        int ret_pos = visit_expr(assembly, fn->expr, var_descriptors, reg_descriptors);
         if (ret_pos) {
                 append_code(assembly, "mov x0, x%i\n", ret_pos);
         }
@@ -275,11 +301,12 @@ char *visit_function(struct Function *fn) {
 
         char *code = assembly->code;
         free(assembly);
-        for (size_t i = 0; i < descriptors->size; ++i) {
-                free(descriptors->var_desc[i]);
+        for (size_t i = 0; i < var_descriptors->size; ++i) {
+                free(var_descriptors->var_desc[i]);
         }
-        free(descriptors->var_desc);
-        free(descriptors);
+        free(var_descriptors->var_desc);
+        free(var_descriptors);
+        free(reg_descriptors);
         return code;
 }
 
