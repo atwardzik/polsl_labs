@@ -184,7 +184,7 @@ int get_reg(struct RegisterDescriptorTable *descriptors) {
 int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptorTable *var_descriptors,
                struct RegisterDescriptorTable *reg_descriptors) {
         if (expr->type == EXPR_LEAF) {
-                auto descriptor = get_variable_position(var_descriptors, expr->leaf_name);
+                struct VariableDescriptor *descriptor = get_variable_position(var_descriptors, expr->leaf_name);
 
                 if (descriptor == nullptr) {
                         print_error("[E] no such variable %s in a scope", expr->leaf_name);
@@ -244,7 +244,7 @@ int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct Var
 }
 
 char *visit_function(struct Function *fn) {
-        auto assembly = create_assembly_buffer(1024);
+        struct GeneratedAssembly *assembly = create_assembly_buffer(1024);
 
         const char *fn_header = ".global _%s\n.align 4\n_%s:\n";
         append_code(assembly, fn_header, fn->name, fn->name);
@@ -258,7 +258,7 @@ char *visit_function(struct Function *fn) {
         size_t stack_shift = 32; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
         append_code(assembly, fn_entrance, stack_shift);
 
-        auto var_descriptors = create_variable_descriptor_table(fn->parameter_count);
+        struct VariableDescriptorTable *var_descriptors = create_variable_descriptor_table(fn->parameter_count);
 
         const char *save_reg = "str x%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(size_t) * fn->parameter_count;
@@ -292,7 +292,7 @@ char *visit_function(struct Function *fn) {
         }
 
 
-        auto reg_descriptors = create_register_descriptor_table();
+        struct RegisterDescriptorTable *reg_descriptors = create_register_descriptor_table();
         int ret_pos = visit_expr(assembly, fn->expr, var_descriptors, reg_descriptors);
         if (ret_pos) {
                 append_code(assembly, "mov x0, x%i\n", ret_pos);
@@ -416,7 +416,9 @@ int main(void) {
                 if (f) {
                         fputs(assembly, f);
 
-                        fputs(".text\n.global _start\n.align 4\n_start:\nmov x0, #0\nmov x1, #31\nmov x2, #3\nmov x3, #9\nbl _cpx\nmov w8, #93\nsvc #0\n", f);
+                        fputs(".text\n.global _start\n.align 4\n_start:\nmov x0, #0\nmov x1, #31\nmov x2, #3\nmov x3, "
+                              "#9\nbl _cpx\nmov w8, #93\nsvc #0\n",
+                              f);
 
                         fclose(f);
                 }
