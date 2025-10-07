@@ -1,23 +1,50 @@
 package controller;
 
+import model.Issue;
 import model.IssueManager;
+import view.BugTrackerView;
 
-public abstract class BugTracker {
-    protected IssueManager manager;
+import java.util.List;
 
-    protected BugTracker(IssueManager manager) {
+public class BugTracker {
+    private IssueManager manager;
+    private BugTrackerView view;
+
+    public BugTracker(IssueManager manager, BugTrackerView view) {
         this.manager = manager;
+        this.view = view;
     }
 
-    public abstract void createIssue();
+    public void run() {
+        while (true) {
+            view.showMainMenu();
+            int choice = view.getMainMenuChoice();
 
-    public abstract void updateIssue();
+            if (choice == 6) {
+                break;
+            }
 
-    public abstract void viewIssue();
-
-    public abstract void listIssues();
-
-    public abstract void filterIssues();
-
-    public abstract void changeUILanguage();
+            switch (choice) {
+                case 1:
+                    Issue issue = view.createIssue();
+                    manager.addIssue(issue);
+                    break;
+                case 2:
+//                    view.updateIssue();
+                    break;
+                case 3:
+//                    view.showIssueDetails();
+                    break;
+                case 4:
+                    List<Issue> issues = manager.getAllIssues();
+                    view.showIssueList(issues);
+                    break;
+                case 5:
+                    break;
+                default:
+                    view.showMainMenuError();
+                    break;
+            }
+        }
+    }
 }

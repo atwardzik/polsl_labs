@@ -16,7 +16,7 @@ import java.util.UUID;
 public class IssueManager {
     private List<Issue> issues = new ArrayList<>();
 
-    public void addTask(Issue issue) {
+    public void addIssue(Issue issue) {
         issues.add(issue);
     }
 
@@ -74,7 +74,7 @@ public class IssueManager {
         return issuesWithTag;
     }
 
-    public List<Issue> getAllTasks() {
+    public List<Issue> getAllIssues() {
         return issues;
     }
 }
