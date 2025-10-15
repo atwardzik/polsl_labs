@@ -8,6 +8,6 @@ public class IssueNotFoundException extends RuntimeException {
     }
 
     public IssueNotFoundException(String title) {
-        super("Issue not found with title: " + title);
+        super("Issue not found with title/ID: " + title);
     }
 }

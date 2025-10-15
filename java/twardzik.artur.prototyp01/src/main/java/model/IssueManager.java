@@ -37,16 +37,38 @@ public class IssueManager {
         return Optional.empty();
     }
 
-    public void assignIssue(UUID issueID, User user) throws Exception {
-        Issue issue = findIssue(issueID).orElseThrow(() -> new IssueNotFoundException(issueID));
+    public Optional<Issue> findIssueByIdFragment(String issueID) {
+        for (Issue issue : issues) {
+            if (issue.getId().toString().startsWith(issueID)) {
+                return Optional.of(issue);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public void assignIssue(Issue issue, User user) throws IssueNotFoundException {
+        if (findIssue(issue.getId()).isEmpty()) {
+            throw new IssueNotFoundException(issue.getId());
+        }
 
         issue.assignUser(user);
     }
 
-    public void setIssueStatus(UUID issueID, BugStatus status) throws Exception {
-        Issue issue = findIssue(issueID).orElseThrow(() -> new IssueNotFoundException(issueID));
+    public void setIssueStatus(Issue issue, BugStatus status) throws IssueNotFoundException {
+        if (findIssue(issue.getId()).isEmpty()) {
+            throw new IssueNotFoundException(issue.getId());
+        }
 
         issue.setStatus(status);
+    }
+
+    public void commentIssue(Issue issue, Comment comment) throws IssueNotFoundException {
+        if (findIssue(issue.getId()).isEmpty()) {
+            throw new IssueNotFoundException(issue.getId());
+        }
+
+        issue.addComment(comment);
     }
 
     public List<Issue> filterByTag(String tag) {

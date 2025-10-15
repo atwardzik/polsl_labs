@@ -12,7 +12,7 @@ public class User {
     private String surname;
     private String username;
     private LocalDateTime createdAt;
-    private Optional<LocalDateTime> lastSeenAt = Optional.empty();
+    private LocalDateTime lastSeenAt;
     List<UserRole> roles;
 
     public User(String name, String surname, String username) {
@@ -27,11 +27,11 @@ public class User {
     }
 
     public void setLastSeenAtNow() {
-        lastSeenAt = Optional.of(LocalDateTime.now());
+        lastSeenAt = LocalDateTime.now();
     }
 
     public Optional<LocalDateTime> getLastSeenAt() {
-        return lastSeenAt;
+        return Optional.ofNullable(lastSeenAt);
     }
 
     public String getName() {

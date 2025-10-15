@@ -27,7 +27,7 @@ public class Issue {
     private Set<String> tags = new HashSet<>();
     private List<Comment> comments = new ArrayList<>();
 
-    public Issue(String title, String description, User reporter) throws Exception {
+    public Issue(String title, String description, User reporter) throws InvalidIssueDataException {
         id = UUID.randomUUID();
 
         setTitle(title);
@@ -35,14 +35,14 @@ public class Issue {
         setDescription(description);
 
         if (reporter == null) {
-            throw new Exception("Reporter cannot be empty.");
+            throw new InvalidIssueDataException("Reporter cannot be empty.");
         }
         this.reporter = reporter;
 
         this.createdAt = LocalDateTime.now();
     }
 
-    public Issue(String title, String description, User reporter, LocalDateTime dueDate, User assignee, BugStatus status, Priority priority, Set<String> tags) throws Exception {
+    public Issue(String title, String description, User reporter, LocalDateTime dueDate, User assignee, BugStatus status, Priority priority, Set<String> tags) throws InvalidIssueDataException {
         this(title, description, reporter);
 
         this.priority = Objects.requireNonNullElse(priority, Priority.LOW);
@@ -53,49 +53,49 @@ public class Issue {
         this.tags = tags;
     }
 
-    public void assignUser(User user) throws Exception {
+    public void assignUser(User user) throws InvalidIssueDataException {
         if (user == null) {
-            throw new Exception("Cannot assign to non-existing user.");
+            throw new InvalidIssueDataException("Cannot assign to non-existing user.");
         }
 
         assignee = user;
     }
 
-    public void setDescription(String description) throws Exception {
+    public void setDescription(String description) throws InvalidIssueDataException {
         if (description.isEmpty()) {
-            throw new Exception("Issue description cannot be empty.");
+            throw new InvalidIssueDataException("Issue description cannot be empty.");
         }
 
         this.description = description;
     }
 
-    public void setStatus(BugStatus status) throws Exception {
+    public void setStatus(BugStatus status) throws InvalidIssueDataException {
         if (status == null) {
-            throw new Exception("Status cannot be null.");
+            throw new InvalidIssueDataException("Status cannot be null.");
         }
 
         this.status = status;
     }
 
-    public void setTitle(String title) throws Exception {
+    public void setTitle(String title) throws InvalidIssueDataException {
         if (title.isEmpty()) {
-            throw new Exception("Issue name cannot be empty.");
+            throw new InvalidIssueDataException("Issue name cannot be empty.");
         }
 
         this.title = title;
     }
 
-    public void setDueDate(LocalDateTime dueDate) throws Exception {
+    public void setDueDate(LocalDateTime dueDate) throws InvalidIssueDataException {
         if (dueDate.isBefore(LocalDateTime.now())) {
-            throw new Exception("Due date must be in the future.");
+            throw new InvalidIssueDataException("Due date must be in the future.");
         }
 
         this.dueDate = dueDate;
     }
 
-    public void setPriority(Priority priority) throws Exception {
+    public void setPriority(Priority priority) throws InvalidIssueDataException {
         if (priority == null) {
-            throw new Exception("Priority cannot be null.");
+            throw new InvalidIssueDataException("Priority cannot be null.");
         }
 
         this.priority = priority;

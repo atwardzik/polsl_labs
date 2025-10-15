@@ -1,26 +1,50 @@
 package view;
 
+import model.BugStatus;
+import model.InvalidIssueDataException;
 import model.Issue;
+import model.User;
 
 import java.util.List;
 
 public interface BugTrackerView {
+    //information
     void showMainMenu();
 
     void showMainMenuError();
 
+    void showUserList(List<User> users);
+
+    void showIssueList(List<Issue> issues);
+
+    void showIssueDetails(Issue issue);
+
+    void showStatusList();
+
+    void showError(String message);
+
+    void showErrorNoSuchUser();
+
+    void showErrorNoSuchIssue();
+
+    void showErrorIdTooShort();
+
+    //user choice
     int getMainMenuChoice();
 
-    Issue createIssue();
+    int getChosenUser();
+
+    BugStatus getStatus() throws IllegalArgumentException;
+
+    String getIssueId();
+
+    //builders/editors
+    Issue createIssue(User reporter) throws InvalidIssueDataException;
 
     void updateIssue(Issue issue);
 
     void filterIssues();
 
+    // other
     void changeUILanguage();
-
-    void showIssueDetails(Issue issue);
-
-    void showIssueList(List<Issue> issues);
-
 }
