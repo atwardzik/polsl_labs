@@ -129,24 +129,8 @@ public class Issue {
         return description;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public LocalDateTime getDueDate() {
-        return dueDate;
-    }
-
     public User getReporter() {
         return reporter;
-    }
-
-    public User getAssignee() {
-        return assignee;
     }
 
     public BugStatus getStatus() {
@@ -157,11 +141,29 @@ public class Issue {
         return priority;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public Set<String> getTags() {
         return tags;
     }
 
     public List<Comment> getComments() {
         return comments;
+    }
+
+    //following fields may contain null-values
+
+    public Optional<LocalDateTime> getUpdatedAt() {
+        return Optional.ofNullable(updatedAt);
+    }
+
+    public Optional<LocalDateTime> getDueDate() {
+        return Optional.ofNullable(dueDate);
+    }
+
+    public Optional<User> getAssignee() {
+        return Optional.ofNullable(assignee);
     }
 }

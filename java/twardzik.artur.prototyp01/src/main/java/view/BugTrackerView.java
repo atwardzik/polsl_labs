@@ -14,6 +14,8 @@ public interface BugTrackerView {
 
     void showIssueList(List<Issue> issues);
 
+    void showIssueShortDetails(Issue issue);
+
     void showIssueDetails(Issue issue);
 
     void showStatusList();
@@ -25,6 +27,8 @@ public interface BugTrackerView {
     void showErrorNoSuchIssue();
 
     void showErrorIdTooShort();
+
+    void showUiLanguageList();
 
     //user choice
     int getMainMenuChoice();
@@ -44,6 +48,5 @@ public interface BugTrackerView {
 
     Comment createComment(User author);
 
-    // other
-    void changeUILanguage();
+    UiLanguage chooseUiLanguage();
 }

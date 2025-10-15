@@ -2,9 +2,13 @@ package controller;
 
 import model.*;
 import view.BugTrackerView;
+import view.CliEnglishView;
+import view.CliGermanView;
+import view.UiLanguage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class BugTracker {
@@ -26,6 +30,13 @@ public class BugTracker {
         return manager.findIssueByIdFragment(idFragment);
     }
 
+    private void changeLanguage(UiLanguage language) {
+        if (Objects.requireNonNull(language) == UiLanguage.ENGLISH) {
+            this.view = new CliEnglishView();
+        } else if (language == UiLanguage.GERMAN) {
+            this.view = new CliGermanView();
+        }
+    }
 
     public void run() {
         // static users for development only
@@ -41,7 +52,7 @@ public class BugTracker {
             view.showMainMenu();
             int choice = view.getMainMenuChoice();
 
-            if (choice == 9) {
+            if (choice == 10) {
                 break;
             }
 
@@ -118,11 +129,12 @@ public class BugTracker {
                         break;
                     }
 
+                    view.showUserList(userList);
                     try {
                         User user = userList.get(view.getChosenUser());
 
                         Comment comment = view.createComment(user);
-                        if (!comment.getCommentText().isBlank()) {
+                        if (!comment.getText().isBlank()) {
                             issue.get().addComment(comment);
                         }
                     } catch (IndexOutOfBoundsException _) {
@@ -150,6 +162,11 @@ public class BugTracker {
                 }
                 case 8: {// filter issues
                     view.showError("Unavailable feature at the moment");
+                    break;
+                }
+                case 9: {//change UI language
+                    view.showUiLanguageList();
+                    changeLanguage(view.chooseUiLanguage());
                     break;
                 }
                 default:

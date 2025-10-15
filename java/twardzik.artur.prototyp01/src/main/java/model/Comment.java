@@ -16,7 +16,15 @@ public class Comment {
         this.createdAt = LocalDateTime.now();
     }
 
-    public String getCommentText() {
+    public String getText() {
         return text;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }
