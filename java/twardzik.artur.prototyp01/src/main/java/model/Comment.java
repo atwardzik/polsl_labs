@@ -15,4 +15,8 @@ public class Comment {
         this.text = text;
         this.createdAt = LocalDateTime.now();
     }
+
+    public String getCommentText() {
+        return text;
+    }
 }

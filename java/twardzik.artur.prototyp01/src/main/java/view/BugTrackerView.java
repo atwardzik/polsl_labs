@@ -1,9 +1,6 @@
 package view;
 
-import model.BugStatus;
-import model.InvalidIssueDataException;
-import model.Issue;
-import model.User;
+import model.*;
 
 import java.util.List;
 
@@ -44,6 +41,8 @@ public interface BugTrackerView {
     void updateIssue(Issue issue);
 
     void filterIssues();
+
+    Comment createComment(User author);
 
     // other
     void changeUILanguage();

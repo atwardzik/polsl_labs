@@ -1,9 +1,6 @@
 package view;
 
-import model.BugStatus;
-import model.InvalidIssueDataException;
-import model.Issue;
-import model.User;
+import model.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -99,7 +96,17 @@ public class CliGermanView implements BugTrackerView {
 
     @Override
     public void updateIssue(Issue issue) {
+        System.out.print("Bitte geben Sie den NEUEN Titel des Issues ein: ");
+        String issueName = scanner.nextLine();
+        if (!issueName.isBlank()) {
+            issue.setTitle(issueName);
+        }
 
+        System.out.print("Bitte geben Sie die NEUE Beschreibung des Issues ein: ");
+        String issueDesc = scanner.nextLine();
+        if (!issueDesc.isBlank()) {
+            issue.setDescription(issueDesc);
+        }
     }
 
     @Override
@@ -126,6 +133,14 @@ public class CliGermanView implements BugTrackerView {
     @Override
     public void filterIssues() {
 
+    }
+
+    @Override
+    public Comment createComment(User author) {
+        System.out.print("Kommentar: ");
+        String comment = scanner.nextLine();
+
+        return new Comment(author, comment);
     }
 
     @Override

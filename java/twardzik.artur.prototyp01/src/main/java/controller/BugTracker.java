@@ -46,7 +46,7 @@ public class BugTracker {
             }
 
             switch (choice) {
-                case 1: // create issue
+                case 1: {// create issue
                     view.showUserList(userList);
 
                     try {
@@ -61,8 +61,19 @@ public class BugTracker {
                         view.showError(e.getMessage());
                     }
                     break;
-                case 2: // update issue
+                }
+                case 2: {// update issue
+                    Optional<Issue> issue = findIssueByShortId();
+
+                    if (issue.isEmpty()) {
+                        view.showErrorNoSuchIssue();
+                        break;
+                    }
+
+                    view.updateIssue(issue.get());
+
                     break;
+                }
                 case 3: {// change issue status
                     Optional<Issue> issue = findIssueByShortId();
 
@@ -99,16 +110,48 @@ public class BugTracker {
                     }
                     break;
                 }
-                case 5: // comment issue
+                case 5: {// comment issue
+                    Optional<Issue> issue = findIssueByShortId();
+
+                    if (issue.isEmpty()) {
+                        view.showErrorNoSuchIssue();
+                        break;
+                    }
+
+                    try {
+                        User user = userList.get(view.getChosenUser());
+
+                        Comment comment = view.createComment(user);
+                        if (!comment.getCommentText().isBlank()) {
+                            issue.get().addComment(comment);
+                        }
+                    } catch (IndexOutOfBoundsException _) {
+                        view.showErrorNoSuchUser();
+                    }
+
                     break;
-                case 6: // show issue details for specified issue
+                }
+                case 6: { // show issue details for specified issue
+                    Optional<Issue> issue = findIssueByShortId();
+
+                    if (issue.isEmpty()) {
+                        view.showErrorNoSuchIssue();
+                        break;
+                    }
+
+                    view.showIssueDetails(issue.get());
+
                     break;
-                case 7: // show all issues
+                }
+                case 7: {// show all issues
                     List<Issue> issues = manager.getAllIssues();
                     view.showIssueList(issues);
                     break;
-                case 8: // filter issues
+                }
+                case 8: {// filter issues
+                    view.showError("Unavailable feature at the moment");
                     break;
+                }
                 default:
                     view.showMainMenuError();
                     break;
