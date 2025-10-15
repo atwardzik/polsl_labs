@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * To be honest I am not sure if it shouldn't be a totally opaque class. What is the purpose of making a class
- * with million of getters and setters and no logic behind?
+ * Class for storing Issue details
  *
- * @author SuperStudent-PL
+ * @author Artur Twardzik
+ * @version 0.1
  */
 public class Issue {
     private UUID id;
@@ -40,6 +40,7 @@ public class Issue {
         this.reporter = reporter;
 
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Issue(String title, String description, User reporter, LocalDateTime dueDate, User assignee, BugStatus status, Priority priority, Set<String> tags) throws InvalidIssueDataException {
@@ -59,6 +60,7 @@ public class Issue {
         }
 
         assignee = user;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setDescription(String description) throws InvalidIssueDataException {
@@ -67,6 +69,7 @@ public class Issue {
         }
 
         this.description = description;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setStatus(BugStatus status) throws InvalidIssueDataException {
@@ -75,6 +78,7 @@ public class Issue {
         }
 
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setTitle(String title) throws InvalidIssueDataException {
@@ -83,6 +87,7 @@ public class Issue {
         }
 
         this.title = title;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setDueDate(LocalDateTime dueDate) throws InvalidIssueDataException {
@@ -91,6 +96,7 @@ public class Issue {
         }
 
         this.dueDate = dueDate;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setPriority(Priority priority) throws InvalidIssueDataException {
@@ -99,16 +105,20 @@ public class Issue {
         }
 
         this.priority = priority;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setAssignee(User assignee) {
         this.assignee = assignee;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void addTag(String tag) {
         if (!tag.isBlank()) {
             tags.add(tag);
         }
+
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void addComment(Comment comment) {

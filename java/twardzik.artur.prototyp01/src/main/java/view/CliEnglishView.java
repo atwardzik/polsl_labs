@@ -7,6 +7,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * English language CLI user interface
+ *
+ * @author Artur Twardzik
+ * @version 0.1
+ */
 public class CliEnglishView implements BugTrackerView {
     private Scanner scanner = new Scanner(System.in);
 
@@ -22,7 +28,7 @@ public class CliEnglishView implements BugTrackerView {
         System.out.println("[7] Show all issues");
         System.out.println("[8] Filter issues");
         System.out.println("[9] Change UI language");
-        System.out.println("[10] Beenden");
+        System.out.println("[10] Finish");
     }
 
 
@@ -112,12 +118,7 @@ public class CliEnglishView implements BugTrackerView {
 
     @Override
     public void showIssueShortDetails(Issue issue) {
-        System.out.printf("| %s | %-40s | Status %-10s| Created by %-15s |",
-                issue.getId().toString().split("-")[0],
-                issue.getTitle(),
-                issue.getStatus(),
-                issue.getReporter().getUsername()
-        );
+        System.out.printf("| %s | %-40s | Status %-10s| Created by %-15s |", issue.getId().toString().split("-")[0], issue.getTitle(), issue.getStatus(), issue.getReporter().getUsername());
     }
 
     @Override
@@ -142,11 +143,7 @@ public class CliEnglishView implements BugTrackerView {
 
         System.out.println("Comments: ");
         for (Comment comment : comments) {
-            System.out.printf("[%s](%s): %s%n",
-                    comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    comment.getAuthor().getUsername(),
-                    comment.getText()
-            );
+            System.out.printf("[%s](%s): %s%n", comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), comment.getAuthor().getUsername(), comment.getText());
         }
     }
 

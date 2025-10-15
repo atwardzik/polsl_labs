@@ -6,6 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Class representing a user
+ *
+ * @author Artur Twardzik
+ * @version 0.1
+ */
 public class User {
     private UUID id;
     private String name;

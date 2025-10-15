@@ -4,16 +4,27 @@ public enum UiLanguage {
     ENGLISH(1),
     GERMAN(2);
 
+    /**
+     * Language code
+     */
     private final int code;
 
+    /**
+     * Enum constructor
+     *
+     * @param code
+     */
     UiLanguage(int code) {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-
+    /**
+     * Converts int to user interface language option
+     *
+     * @param code
+     * @return language option
+     * @throws IllegalArgumentException on illegal code
+     */
     public static UiLanguage fromCode(int code) throws IllegalArgumentException {
         for (UiLanguage status : values()) {
             if (status.code == code) {

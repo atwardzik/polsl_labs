@@ -6,8 +6,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
-// public class CliView implements, that would be abstract with localization strings
-
+/**
+ * German language CLI user interface
+ *
+ * @author Artur Twardzik
+ * @version 0.1
+ */
 public class CliGermanView implements BugTrackerView {
     private Scanner scanner = new Scanner(System.in);
 
@@ -113,12 +117,7 @@ public class CliGermanView implements BugTrackerView {
 
     @Override
     public void showIssueShortDetails(Issue issue) {
-        System.out.printf("| %s | %-40s | Status %-10s| Erstellt von %-15s |",
-                issue.getId().toString().split("-")[0],
-                issue.getTitle(),
-                issue.getStatus(),
-                issue.getReporter().getUsername()
-        );
+        System.out.printf("| %s | %-40s | Status %-10s| Erstellt von %-15s |", issue.getId().toString().split("-")[0], issue.getTitle(), issue.getStatus(), issue.getReporter().getUsername());
     }
 
     @Override
@@ -144,11 +143,7 @@ public class CliGermanView implements BugTrackerView {
 
         System.out.println("Kommentare: ");
         for (Comment comment : comments) {
-            System.out.printf("[%s](%s): %s%n",
-                    comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    comment.getAuthor().getUsername(),
-                    comment.getText()
-            );
+            System.out.printf("[%s](%s): %s%n", comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), comment.getAuthor().getUsername(), comment.getText());
         }
     }
 

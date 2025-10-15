@@ -6,16 +6,27 @@ public enum BugStatus {
     CLOSED(3),
     REOPENED(4);
 
+    /**
+     * Bug Status code
+     */
     private final int code;
 
+    /**
+     * Enum constructor
+     *
+     * @param code
+     */
     BugStatus(int code) {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-
+    /**
+     * Converts int to bug status option
+     *
+     * @param code
+     * @return bug status
+     * @throws IllegalArgumentException on illegal code
+     */
     public static BugStatus fromCode(int code) throws IllegalArgumentException {
         for (BugStatus status : values()) {
             if (status.code == code) {

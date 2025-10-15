@@ -11,15 +11,33 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Bug tracker Application Run point
+ *
+ * @author Artur Twardzik
+ * @version 0.1
+ */
 public class BugTracker {
     private IssueManager manager;
     private BugTrackerView view;
 
+    /**
+     * Bug tracker constructor
+     *
+     * @param manager specified issue manager
+     * @param view    specified view (CLI/GUI/web)
+     */
     public BugTracker(IssueManager manager, BugTrackerView view) {
         this.manager = manager;
         this.view = view;
     }
 
+    /**
+     * Searches for issue in internal issue list
+     *
+     * @return Issue or none
+     * @throws IssueNotFoundException
+     */
     private Optional<Issue> findIssueByShortId() throws IssueNotFoundException {
         String idFragment = view.getIssueId();
         if (idFragment.length() < 6) {
@@ -30,6 +48,11 @@ public class BugTracker {
         return manager.findIssueByIdFragment(idFragment);
     }
 
+    /**
+     * Changes the app language
+     *
+     * @param language specified UI language
+     */
     private void changeLanguage(UiLanguage language) {
         if (Objects.requireNonNull(language) == UiLanguage.ENGLISH) {
             this.view = new CliEnglishView();
@@ -38,6 +61,9 @@ public class BugTracker {
         }
     }
 
+    /**
+     * Runs the application
+     */
     public void run() {
         // static users for development only
         User user1 = new User("Artur", "Twardzik", "at");

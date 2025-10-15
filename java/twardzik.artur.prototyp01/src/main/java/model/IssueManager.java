@@ -7,8 +7,10 @@ package model;
 import java.util.*;
 
 /**
+ * Class holding all issues
  *
- * @author SuperStudent-PL
+ * @author Artur Twardzik
+ * @version 0.1
  */
 public class IssueManager {
     private List<Issue> issues = new ArrayList<>();
