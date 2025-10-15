@@ -4,10 +4,7 @@
  */
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  *
@@ -20,42 +17,34 @@ public class IssueManager {
         issues.add(issue);
     }
 
-    public Issue findIssue(UUID issueID) {
+    public Optional<Issue> findIssue(UUID issueID) {
         for (Issue issue : issues) {
             if (issue.getId().equals(issueID)) {
-                return issue;
+                return Optional.of(issue);
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
-    public Issue findIssue(String title) {
+    public Optional<Issue> findIssue(String title) {
         for (Issue issue : issues) {
             if (issue.getTitle().equals(title)) {
-                return issue;
+                return Optional.of(issue);
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public void assignIssue(UUID issueID, User user) throws Exception {
-        Issue issue = findIssue(issueID);
-
-        if (issue == null) {
-            throw new Exception("There is no such task.");
-        }
+        Issue issue = findIssue(issueID).orElseThrow(() -> new IssueNotFoundException(issueID));
 
         issue.assignUser(user);
     }
 
     public void setIssueStatus(UUID issueID, BugStatus status) throws Exception {
-        Issue issue = findIssue(issueID);
-
-        if (issue == null) {
-            throw new Exception("There is no such task.");
-        }
+        Issue issue = findIssue(issueID).orElseThrow(() -> new IssueNotFoundException(issueID));
 
         issue.setStatus(status);
     }
