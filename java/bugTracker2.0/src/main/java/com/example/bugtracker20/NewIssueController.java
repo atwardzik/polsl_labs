@@ -1,18 +1,11 @@
 package com.example.bugtracker20;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.PauseTransition;
-import javafx.animation.SequentialTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import javafx.scene.web.HTMLEditor;
-import javafx.stage.Popup;
-import javafx.util.Duration;
 import model.*;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,7 +14,7 @@ import java.util.Set;
 public class NewIssueController {
     private MainAppWindowController mainWindow;
 
-    private IssueManager manager;
+    private Issue issue;
 
     @FXML
     private Spinner<User> asigneeSpinner;
@@ -53,6 +46,11 @@ public class NewIssueController {
     private ChildControllerListener listener;
 
     @FXML
+    private void initialize() {
+//        textEditor.
+    }
+
+    @FXML
     void backBtnClicked(ActionEvent event) {
         mainWindow.goBack();
     }
@@ -66,6 +64,7 @@ public class NewIssueController {
             titleField.getStyleClass().add("error-field");
 
             mainWindow.showToast("Title should not be empty!");
+            return;
         }
 
         String htmlContent = textEditor.getHtmlText();
@@ -83,32 +82,45 @@ public class NewIssueController {
             return;
         }
 
+        String[] tokens = tagsField.getText().split("\\s+");
+        Set<String> tokenSet = new HashSet<>(Arrays.asList(tokens));
+
+        LocalDateTime dueDateStart = null;
+        if (dueDate.getValue() != null) {
+            dueDateStart = dueDate.getValue().atStartOfDay();
+        }
+
+        Issue newIssue = null;
         try {
-            String[] tokens = tagsField.getText().split("\\s+");
-
-            Set<String> tokenSet = new HashSet<>(Arrays.asList(tokens));
-
-            LocalDateTime dueDateStart = null;
-            if (dueDate.getValue() != null) {
-                dueDateStart = dueDate.getValue().atStartOfDay();
-            }
-
-            Issue issue = new Issue(titleField.getText(), textEditor.getHtmlText(),
+            newIssue = new Issue(titleField.getText(), textEditor.getHtmlText(),
                     user, dueDateStart,
                     asigneeSpinner.getValue(), statusSpinner.getValue(),
                     prioritySpinner.getValue(), tokenSet);
 
-            manager.addIssue(issue);
-            mainWindow.setIssuePane(issue);
         } catch (Exception e) {
-            if (listener != null) {
-                listener.onError(e);
+            if (this.listener != null) {
+                this.listener.onError(e);
+                return;
             }
         }
+
+        if (newIssue == null) {
+            return;
+        }
+
+        if (issue == null) {
+            issue = newIssue;
+            createBtn.setText("Save");
+            mainWindow.addIssue(issue);
+        } else {
+            issue.updateFrom(newIssue);
+        }
+
+        mainWindow.setIssuePane(issue);
     }
 
-    public void setIssueManager(IssueManager manager) {
-        this.manager = manager;
+    public void setIssue(Issue manager) {
+        this.issue = manager;
     }
 
     public void setParent(MainAppWindowController mainWindow) {
@@ -118,5 +130,4 @@ public class NewIssueController {
     public void setExceptionListerner(ChildControllerListener eventListerner) {
         this.listener = eventListerner;
     }
-
 }

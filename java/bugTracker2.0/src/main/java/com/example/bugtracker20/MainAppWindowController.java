@@ -13,7 +13,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.Window;
 import javafx.util.Duration;
 import model.User;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -22,9 +21,7 @@ import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import model.Issue;
 import model.IssueManager;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 public class MainAppWindowController implements ChildControllerListener {
     private IssueManager manager;
@@ -34,6 +31,10 @@ public class MainAppWindowController implements ChildControllerListener {
     private User user;
 
     private Node lastRightSideContent;
+
+    private boolean issueUnderCreation;
+
+    private Node newIssueContents;
 
 
     @FXML
@@ -94,14 +95,13 @@ public class MainAppWindowController implements ChildControllerListener {
         this.manager = manager;
         this.users = users;
 
+        issueUnderCreation = false;
+
         //TODO: REPLACE
         user = users.get(0);
     }
 
-    private void setRightSidePane(Node content) {
-        if (!rightSidePane.getChildren().isEmpty()) {
-            lastRightSideContent = rightSidePane.getChildren().get(0);
-        }
+    private void setRightPane(Node content) {
         rightSidePane.getChildren().clear();
         rightSidePane.getChildren().add(content);
 
@@ -109,14 +109,24 @@ public class MainAppWindowController implements ChildControllerListener {
         VBox.setVgrow(content, Priority.ALWAYS);
     }
 
-    public void goBack() {
-        if (lastRightSideContent != null) {
-            rightSidePane.getChildren().clear();
-            rightSidePane.getChildren().add(lastRightSideContent);
-
-            HBox.setHgrow(lastRightSideContent, Priority.ALWAYS);
-            VBox.setVgrow(lastRightSideContent, Priority.ALWAYS);
+    private void setNewRightPane(Node content) {
+        if (!rightSidePane.getChildren().isEmpty()) {
+            lastRightSideContent = rightSidePane.getChildren().get(0);
         }
+
+        setRightPane(content);
+    }
+
+    public void goBack() {
+        if (lastRightSideContent == null) {
+            return;
+        }
+
+        setRightPane(lastRightSideContent);
+    }
+
+    private void restoreCreatedIssueView() {
+        setRightPane(newIssueContents);
     }
 
     @FXML
@@ -125,28 +135,42 @@ public class MainAppWindowController implements ChildControllerListener {
     }
 
     @FXML
-    void onIssuesButtonClick(ActionEvent event) throws IOException {
+    void onIssuesButtonClick(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("IssuesListView.fxml"));
-        HBox newContent = loader.load();
-        IssuesListController controller = loader.getController();
+        try {
+            HBox newContent = loader.load();
+            IssuesListController controller = loader.getController();
 
-        controller.setParent(this);
-        controller.initializeData();
+            controller.setParent(this);
+            controller.setExceptionListerner(this);
+            controller.initializeData();
 
-        setRightSidePane(newContent);
+            setNewRightPane(newContent);
+        } catch (Exception e) {
+            this.onError(e);
+        }
     }
 
     @FXML
-    void onNewButtonClick(ActionEvent event) throws IOException {
+    void onNewButtonClick(ActionEvent event) {
+        if (issueUnderCreation) {
+            restoreCreatedIssueView();
+            return;
+        }
+
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("NewIssueView.fxml"));
-        HBox newContent = loader.load();
-        NewIssueController controller = loader.getController();
+        try {
+            issueUnderCreation = true;
+            newIssueContents = loader.load();
+            NewIssueController controller = loader.getController();
 
-        controller.setParent(this);
-        controller.setIssueManager(manager);
-        controller.setExceptionListerner(this);
+            controller.setParent(this);
+            controller.setExceptionListerner(this);
 
-        setRightSidePane(newContent);
+            setNewRightPane(newIssueContents);
+        } catch (Exception e) {
+            this.onError(e);
+        }
     }
 
     @FXML
@@ -155,17 +179,29 @@ public class MainAppWindowController implements ChildControllerListener {
     }
 
 
-    public void setIssuePane(Issue issue) throws IOException {
+    public void setIssuePane(Issue issue) {
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("IssueView.fxml"));
-        HBox newContent = loader.load();
-        IssueViewController controller = loader.getController();
+        try {
+            HBox newContent = loader.load();
+            IssueViewController controller = loader.getController();
 
-        controller.setParent(this);
-        controller.initializeData(issue);
+            controller.setParent(this);
+            controller.initializeData(issue);
 
-        setRightSidePane(newContent);
+            setNewRightPane(newContent);
+        } catch (Exception e) {
+            this.onError(e);
+        }
     }
 
+    public void addIssue(Issue issue) {
+        try {
+            manager.addIssue(issue);
+            issueUnderCreation = false;
+        } catch (Exception e) {
+            this.onError(e);
+        }
+    }
 
     public List<Issue> getIssuesList() {
         return manager.getAllIssues();

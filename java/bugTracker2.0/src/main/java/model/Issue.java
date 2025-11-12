@@ -11,7 +11,7 @@ import java.util.*;
  * Class for storing Issue details
  *
  * @author Artur Twardzik
- * @version 0.1
+ * @version 0.2
  */
 public class Issue {
     /**
@@ -178,7 +178,7 @@ public class Issue {
      * @throws InvalidIssueDataException if dueDate is before the current time
      */
     public void setDueDate(LocalDateTime dueDate) throws InvalidIssueDataException {
-        if (dueDate.isBefore(LocalDateTime.now())) {
+        if (dueDate == null || dueDate.isBefore(LocalDateTime.now())) {
             throw new InvalidIssueDataException("Due date must be in the future.");
         }
 
@@ -232,6 +232,36 @@ public class Issue {
     public void addComment(Comment comment) {
         comments.add(comment);
     }
+
+    /**
+     * Updated current issue on fields with different values compared to the parameter
+     *
+     * @param updated issue with new fields
+     */
+    public void updateFrom(Issue updated) {
+        if (!Objects.equals(this.title, updated.title)) {
+            this.title = updated.title;
+        }
+        if (!Objects.equals(this.description, updated.description)) {
+            this.description = updated.description;
+        }
+        if (!Objects.equals(this.assignee, updated.assignee)) {
+            this.assignee = updated.assignee;
+        }
+        if (!Objects.equals(this.status, updated.status)) {
+            this.status = updated.status;
+        }
+        if (!Objects.equals(this.priority, updated.priority)) {
+            this.priority = updated.priority;
+        }
+        if (!Objects.equals(this.dueDate, updated.dueDate)) {
+            this.dueDate = updated.dueDate;
+        }
+        if (!Objects.equals(this.tags, updated.tags)) {
+            this.tags = new HashSet<>(updated.tags);
+        }
+    }
+
 
     // getters
 

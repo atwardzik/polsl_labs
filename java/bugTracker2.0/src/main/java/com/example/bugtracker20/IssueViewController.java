@@ -1,10 +1,11 @@
 package com.example.bugtracker20;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebView;
 import model.Issue;
 
@@ -47,6 +48,7 @@ public class IssueViewController {
 
         descriptionWebView.getEngine().loadContent(issue.getDescription());
         descriptionWebView.setMaxWidth(Double.MAX_VALUE);
+        descriptionWebView.addEventFilter(KeyEvent.KEY_TYPED, Event::consume);
     }
 
     public void setParent(MainAppWindowController mainWindow) {

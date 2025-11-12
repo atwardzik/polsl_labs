@@ -3,14 +3,8 @@ package com.example.bugtracker20;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import model.Issue;
-import model.User;
-
-import java.io.IOException;
-import java.util.List;
 
 public class IssuesListController {
     @FXML
@@ -18,20 +12,20 @@ public class IssuesListController {
 
     MainAppWindowController mainWindowController;
 
-    public void setParent(MainAppWindowController mainWindowController) {
-        this.mainWindowController = mainWindowController;
-    }
+    private ChildControllerListener listener;
 
     public void initializeData() {
         issuesList.setCellFactory(lv -> new IssueCell());
         issuesList.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) { // double-click
+            if (event.getClickCount() == 2) {
                 Issue selectedIssue = issuesList.getSelectionModel().getSelectedItem();
                 if (selectedIssue != null) {
                     try {
                         mainWindowController.setIssuePane(selectedIssue);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    } catch (Exception e) {
+                        if (this.listener != null) {
+                            this.listener.onError(e);
+                        }
                     }
                 }
             }
@@ -40,5 +34,13 @@ public class IssuesListController {
 
         list.addAll(mainWindowController.getIssuesList());
         issuesList.setItems(list);
+    }
+
+    public void setParent(MainAppWindowController mainWindowController) {
+        this.mainWindowController = mainWindowController;
+    }
+
+    public void setExceptionListerner(ChildControllerListener eventListerner) {
+        this.listener = eventListerner;
     }
 }
