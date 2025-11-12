@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"com.mycompany.twardzik.artur.bugTracker"},{"l":"controller"},{"l":"model"},{"l":"view"}];updateSearchResults();
