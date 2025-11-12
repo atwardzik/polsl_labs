@@ -69,3 +69,27 @@
 /*    -fx-background-radius: 4;*/
 /*    -fx-font-size: 11px;*/
 /*}*/
+
+.issue-description {
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-background-color: transparent;
+    -fx-control-inner-background: tranparent;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 14, 0.5, 0, 6);
+}
+
+.error-field {
+    -fx-border-color: #E53935;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-color: #FFEBEE;
+}
+
+.toast {
+    -fx-background-color: #323232;
+    -fx-text-fill: white;
+    -fx-padding: 8px 15px;
+    -fx-background-radius: 5px;
+    -fx-font-size: 14px;
+    -fx-opacity: 0.9;
+}

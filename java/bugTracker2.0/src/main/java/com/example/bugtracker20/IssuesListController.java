@@ -29,7 +29,7 @@ public class IssuesListController {
                 Issue selectedIssue = issuesList.getSelectionModel().getSelectedItem();
                 if (selectedIssue != null) {
                     try {
-                        mainWindowController.setIssuePane(selectedIssue.getId());
+                        mainWindowController.setIssuePane(selectedIssue);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
