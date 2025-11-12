@@ -9,8 +9,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -35,6 +40,7 @@ public class MainAppWindowController implements ChildControllerListener {
     private boolean issueUnderCreation;
 
     private Node newIssueContents;
+    private NewIssueController newIssueController;
 
 
     @FXML
@@ -58,38 +64,7 @@ public class MainAppWindowController implements ChildControllerListener {
     @FXML
     private Button userButton;
 
-    @FXML
-    private void initialize() {
-        FontIcon issuesBtnIcon = new FontIcon(MaterialDesign.MDI_VIEW_LIST);
-        issuesBtnIcon.setIconSize(20);
-        issuesBtnIcon.setIconColor(Color.WHITE);
-        issuesButton.setGraphic(issuesBtnIcon);
-        issuesButton.setText("");
-
-        FontIcon filterBtnIcon = new FontIcon(MaterialDesign.MDI_MAGNIFY);
-        filterBtnIcon.setIconSize(20);
-        filterBtnIcon.setIconColor(Color.WHITE);
-        filterButton.setGraphic(filterBtnIcon);
-        filterButton.setText("");
-
-        FontIcon newBtnIcon = new FontIcon(MaterialDesign.MDI_PENCIL);
-        newBtnIcon.setIconSize(20);
-        newBtnIcon.setIconColor(Color.WHITE);
-        newButton.setGraphic(newBtnIcon);
-        newButton.setText("");
-
-        FontIcon userBtnIcon = new FontIcon(MaterialDesign.MDI_ACCOUNT);
-        userBtnIcon.setIconSize(20);
-        userBtnIcon.setIconColor(Color.WHITE);
-        userButton.setGraphic(userBtnIcon);
-        userButton.setText("");
-    }
-
-    @Override
-    public void onError(Exception e) {
-        showToast("Error: " + e.getMessage());
-        e.printStackTrace();
-    }
+    private Button currentButton;
 
     public MainAppWindowController(IssueManager manager, List<User> users) {
         this.manager = manager;
@@ -99,6 +74,73 @@ public class MainAppWindowController implements ChildControllerListener {
 
         //TODO: REPLACE
         user = users.get(0);
+    }
+
+    @FXML
+    private void initialize() {
+        String shortcutSymbol = System.getProperty("os.name").toLowerCase().contains("mac") ? "⌘" : "Ctrl+";
+
+        FontIcon issuesBtnIcon = new FontIcon(MaterialDesign.MDI_VIEW_LIST);
+        issuesBtnIcon.setIconSize(20);
+        issuesBtnIcon.setIconColor(Color.WHITE);
+        issuesButton.setGraphic(issuesBtnIcon);
+        issuesButton.setText("");
+        Tooltip.install(issuesButton, new Tooltip("View Issues (" + shortcutSymbol + "I)"));
+
+        FontIcon filterBtnIcon = new FontIcon(MaterialDesign.MDI_MAGNIFY);
+        filterBtnIcon.setIconSize(20);
+        filterBtnIcon.setIconColor(Color.WHITE);
+        filterButton.setGraphic(filterBtnIcon);
+        filterButton.setText("");
+        Tooltip.install(filterButton, new Tooltip("Filter Issues (" + shortcutSymbol + "F)"));
+
+        FontIcon newBtnIcon = new FontIcon(MaterialDesign.MDI_PENCIL);
+        newBtnIcon.setIconSize(20);
+        newBtnIcon.setIconColor(Color.WHITE);
+        newButton.setGraphic(newBtnIcon);
+        newButton.setText("");
+        Tooltip.install(newButton, new Tooltip("New Issue (" + shortcutSymbol + "N)"));
+
+        FontIcon userBtnIcon = new FontIcon(MaterialDesign.MDI_ACCOUNT);
+        userBtnIcon.setIconSize(20);
+        userBtnIcon.setIconColor(Color.WHITE);
+        userButton.setGraphic(userBtnIcon);
+        userButton.setText("");
+        Tooltip.install(userButton, new Tooltip("Manage Account (" + shortcutSymbol + "A)"));
+
+
+        currentButton = userButton;
+
+        mainBorderPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                registerShortcuts(newScene);
+            }
+        });
+    }
+
+    @Override
+    public void onError(Exception e) {
+        showToast("Error: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void registerShortcuts(Scene scene) {
+        scene.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN),
+                () -> onNewButtonClick(null)
+        );
+        scene.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.I, KeyCombination.SHORTCUT_DOWN),
+                () -> onIssuesButtonClick(null)
+        );
+        scene.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN),
+                () -> onFilterButtonClick(null)
+        );
+        scene.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_DOWN),
+                () -> onUserButtonClicked(null)
+        );
     }
 
     private void setRightPane(Node content) {
@@ -125,8 +167,20 @@ public class MainAppWindowController implements ChildControllerListener {
         setRightPane(lastRightSideContent);
     }
 
-    private void restoreCreatedIssueView() {
+    public void restoreCreatedIssueView() {
         setRightPane(newIssueContents);
+        newIssueController.setFocusOnTitle();
+    }
+
+    private void makeButtonActive(Button button) {
+        FontIcon currentIcon = (FontIcon) currentButton.getGraphic();
+        currentIcon.setIconColor(Color.WHITE);
+        currentButton.setGraphic(currentIcon);
+
+        currentButton = button;
+        currentIcon = (FontIcon) currentButton.getGraphic();
+        currentIcon.setIconColor(Color.LIGHTBLUE);
+        currentButton.setGraphic(currentIcon);
     }
 
     @FXML
@@ -136,6 +190,8 @@ public class MainAppWindowController implements ChildControllerListener {
 
     @FXML
     void onIssuesButtonClick(ActionEvent event) {
+        makeButtonActive(issuesButton);
+
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("IssuesListView.fxml"));
         try {
             HBox newContent = loader.load();
@@ -153,6 +209,8 @@ public class MainAppWindowController implements ChildControllerListener {
 
     @FXML
     void onNewButtonClick(ActionEvent event) {
+        makeButtonActive(newButton);
+
         if (issueUnderCreation) {
             restoreCreatedIssueView();
             return;
@@ -162,10 +220,11 @@ public class MainAppWindowController implements ChildControllerListener {
         try {
             issueUnderCreation = true;
             newIssueContents = loader.load();
-            NewIssueController controller = loader.getController();
+            newIssueController = loader.getController();
 
-            controller.setParent(this);
-            controller.setExceptionListerner(this);
+            newIssueController.setParent(this);
+            newIssueController.setExceptionListerner(this);
+            newIssueController.setFocusOnTitle();
 
             setNewRightPane(newIssueContents);
         } catch (Exception e) {
@@ -175,11 +234,22 @@ public class MainAppWindowController implements ChildControllerListener {
 
     @FXML
     void onUserButtonClicked(ActionEvent event) {
+        makeButtonActive(userButton);
 
+        FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("AccountView.fxml"));
+        try {
+            HBox newContent = loader.load();
+            AccountController controller = loader.getController();
+
+            setNewRightPane(newContent);
+        } catch (Exception e) {
+            this.onError(e);
+        }
     }
 
 
     public void setIssuePane(Issue issue) {
+        makeButtonActive(issuesButton);
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("IssueView.fxml"));
         try {
             HBox newContent = loader.load();
@@ -198,6 +268,33 @@ public class MainAppWindowController implements ChildControllerListener {
         try {
             manager.addIssue(issue);
             issueUnderCreation = false;
+        } catch (Exception e) {
+            this.onError(e);
+        }
+    }
+
+    public void updateIssue(Issue issue, Issue newValue) {
+        try {
+            issue.updateFrom(newValue);
+            issueUnderCreation = false;
+        } catch (Exception e) {
+            this.onError(e);
+        }
+    }
+
+    public void setEditIssuePane(Issue issue) {
+        makeButtonActive(newButton);
+        FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("NewIssueView.fxml"));
+        try {
+            issueUnderCreation = true;
+            newIssueContents = loader.load();
+            newIssueController = loader.getController();
+
+            newIssueController.setParent(this);
+            newIssueController.setIssue(issue);
+            newIssueController.setExceptionListerner(this);
+
+            setNewRightPane(newIssueContents);
         } catch (Exception e) {
             this.onError(e);
         }
@@ -224,7 +321,7 @@ public class MainAppWindowController implements ChildControllerListener {
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
 
-        PauseTransition stay = new PauseTransition(Duration.seconds(4));
+        PauseTransition stay = new PauseTransition(Duration.seconds(3));
 
         FadeTransition fadeOut = new FadeTransition(Duration.millis(500), toast);
         fadeOut.setFromValue(1);

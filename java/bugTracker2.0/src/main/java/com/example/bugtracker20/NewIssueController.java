@@ -1,11 +1,17 @@
 package com.example.bugtracker20;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.HBox;
 import javafx.scene.web.HTMLEditor;
 import model.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +30,9 @@ public class NewIssueController {
 
     @FXML
     private Button createBtn;
+
+    @FXML
+    private HBox newIssueScene;
 
     @FXML
     private DatePicker dueDate;
@@ -47,7 +56,14 @@ public class NewIssueController {
 
     @FXML
     private void initialize() {
-//        textEditor.
+        newIssueScene.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN),
+                        () -> createBtnClicked(null)
+                );
+            }
+        });
     }
 
     @FXML
@@ -112,15 +128,25 @@ public class NewIssueController {
             issue = newIssue;
             createBtn.setText("Save");
             mainWindow.addIssue(issue);
+            mainWindow.showToast("New Issue Created");
         } else {
-            issue.updateFrom(newIssue);
+            mainWindow.updateIssue(issue, newIssue);
+            mainWindow.showToast("Issue updated successfully");
         }
 
         mainWindow.setIssuePane(issue);
     }
 
-    public void setIssue(Issue manager) {
-        this.issue = manager;
+    public void setIssue(Issue issue) {
+        this.issue = issue;
+
+        titleField.setText(issue.getTitle());
+        textEditor.setHtmlText(issue.getDescription());
+//        if (issue.getDueDate().isPresent()) {
+//            dueDate.setValue(LocalDate.from(issue.getDueDate().get()));
+//        }
+
+        createBtn.setText("Save");
     }
 
     public void setParent(MainAppWindowController mainWindow) {
@@ -129,5 +155,9 @@ public class NewIssueController {
 
     public void setExceptionListerner(ChildControllerListener eventListerner) {
         this.listener = eventListerner;
+    }
+
+    public void setFocusOnTitle() {
+        Platform.runLater(() -> titleField.requestFocus());
     }
 }

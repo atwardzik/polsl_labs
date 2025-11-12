@@ -9,9 +9,16 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebView;
 import model.Issue;
 
+import java.time.format.DateTimeFormatter;
+
 
 public class IssueViewController {
     MainAppWindowController mainWindow;
+
+    Issue issue;
+
+    @FXML
+    private Button assignBtn;
 
     @FXML
     private Label authorLabel;
@@ -29,7 +36,15 @@ public class IssueViewController {
     private Button editIssueBtn;
 
     @FXML
+    private Button markStatusBtn;
+
+    @FXML
     private Label titleLabel;
+
+    @FXML
+    void assignBtnClicked(ActionEvent event) {
+
+    }
 
     @FXML
     void backBtnClicked(ActionEvent event) {
@@ -38,17 +53,24 @@ public class IssueViewController {
 
     @FXML
     void editIssueBtnClicked(ActionEvent event) {
-
+        mainWindow.setEditIssuePane(issue);
     }
 
     public void initializeData(Issue issue) {
         authorLabel.setText("Author: " + issue.getReporter().getUsername());
-        dateLabel.setText("Date: " + issue.getCreatedAt());
+        dateLabel.setText("Date: " + issue.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         titleLabel.setText("Title: " + issue.getTitle());
 
         descriptionWebView.getEngine().loadContent(issue.getDescription());
         descriptionWebView.setMaxWidth(Double.MAX_VALUE);
         descriptionWebView.addEventFilter(KeyEvent.KEY_TYPED, Event::consume);
+
+        this.issue = issue;
+    }
+
+    @FXML
+    void markStatusBtnClicked(ActionEvent event) {
+
     }
 
     public void setParent(MainAppWindowController mainWindow) {

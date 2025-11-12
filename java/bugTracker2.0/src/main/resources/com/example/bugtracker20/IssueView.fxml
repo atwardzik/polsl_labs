@@ -53,6 +53,16 @@
                         <Insets bottom="10.0" right="10.0" />
                      </HBox.margin>
                   </Button>
+                  <Button fx:id="assignBtn" mnemonicParsing="false" onAction="#assignBtnClicked" text="Assign">
+                     <HBox.margin>
+                        <Insets bottom="10.0" right="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="markStatusBtn" mnemonicParsing="false" onAction="#markStatusBtnClicked" text="Mark Status">
+                     <HBox.margin>
+                        <Insets bottom="10.0" right="10.0" />
+                     </HBox.margin>
+                  </Button>
                </children>
             </HBox>
          </children>
