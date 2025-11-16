@@ -11,4 +11,6 @@ module com.example.bugtracker20 {
 
     opens com.example.bugtracker20 to javafx.fxml;
     exports com.example.bugtracker20;
+    exports controller;
+    opens controller to javafx.fxml;
 }

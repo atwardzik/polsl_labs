@@ -1,5 +1,7 @@
-package com.example.bugtracker20;
+package controller;
 
+import com.example.bugtracker20.ChildControllerListener;
+import com.example.bugtracker20.HelloApplication;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
@@ -26,54 +28,142 @@ import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import model.Issue;
 import model.IssueManager;
 
-import java.nio.file.DirectoryStream;
 import java.util.List;
+import java.util.Stack;
 
+/**
+ * Controller for the main application window. Manages navigation between views,
+ * handles menu button activation, keyboard shortcuts, view caching, and
+ * communication with child controllers. Also provides common UI utilities such
+ * as toast messages.
+ *
+ * @author Artur Twardzik
+ * @version 0.2
+ */
 public class MainAppWindowController implements ChildControllerListener {
+    /**
+     * Manager responsible for storing, updating, and retrieving issues.
+     */
     private IssueManager manager;
 
+    /**
+     * List of all users available in the system.
+     */
     private List<User> users;
 
+    /**
+     * The currently active or logged-in user.
+     */
     private User user;
 
-    private Node lastRightSideContent;
+    /**
+     * Stack storing previous right-side UI content for back navigation.
+     */
+    private Stack<Node> lastRightSideContents;
+    /**
+     * Stack storing previously active menu buttons for restoring appearance.
+     */
+    private Stack<Button> lastMenuButtons;
 
+    /**
+     * True when the New Issue view is currently active or cached.
+     */
     private boolean issueUnderCreation;
+    /**
+     * Cached UI content for the New Issue view.
+     */
     private Node newIssueContents;
+    /**
+     * Controller associated with the New Issue view.
+     */
     private NewIssueController newIssueController;
 
+    /**
+     * True when the Filter Issues view is active or cached.
+     */
     private boolean issuesFiltered;
+    /**
+     * Cached UI content for the Filter Issues view.
+     */
     private Node filterContents;
+    /**
+     * Controller for the Filter Issues view.
+     */
     private FilterController filterController;
 
+    /**
+     * True when the Issues List view is active or cached.
+     */
+    private boolean issuesListed;
+    /**
+     * Cached UI content for the Issues List view.
+     */
+    private Node issuesListContents;
+    /**
+     * Controller for the Issue List View
+     */
+    private IssuesListController issuesListController;
+
+    /**
+     * Menu bar button for opening the Filter Issues view.
+     */
     @FXML
     private Button filterButton;
 
+    /**
+     * Menu bar button for opening the Issues list view.
+     */
     @FXML
     private Button issuesButton;
 
+    /**
+     * Root pane of the main application window.
+     */
     @FXML
     private BorderPane mainBorderPane;
 
+    /**
+     * StackPane used for overlay UI (toast messages, overlays, etc.).
+     */
     @FXML
     private StackPane middleStackPane;
 
+    /**
+     * Right-side container displaying main content views.
+     */
     @FXML
     private HBox rightSidePane;
 
+    /**
+     * Menu bar button for creating a new issue.
+     */
     @FXML
     private Button newButton;
 
+    /**
+     * Menu bar button for user account management.
+     */
     @FXML
     private Button userButton;
 
-    private Button previousButton;
+    /**
+     * Currently active menu button.
+     */
     private Button currentButton;
 
+    /**
+     * Constructs the main window controller with the required issue manager and
+     * list of users. Initializes navigation stacks and internal state.
+     *
+     * @param manager the issue manager to be used by the application
+     * @param users   list of users available in the system
+     */
     public MainAppWindowController(IssueManager manager, List<User> users) {
         this.manager = manager;
         this.users = users;
 
+        lastRightSideContents = new Stack<>();
+        lastMenuButtons = new Stack<>();
         issueUnderCreation = false;
         issuesFiltered = false;
 
@@ -81,6 +171,10 @@ public class MainAppWindowController implements ChildControllerListener {
         user = users.get(0);
     }
 
+    /**
+     * JavaFX initialization method. Configures menu button icons and tooltips,
+     * sets up keyboard shortcuts, and loads the initial user account view.
+     */
     @FXML
     private void initialize() {
         String shortcutSymbol = System.getProperty("os.name").toLowerCase().contains("mac") ? "⌘" : "Ctrl+";
@@ -111,7 +205,7 @@ public class MainAppWindowController implements ChildControllerListener {
         userBtnIcon.setIconColor(Color.WHITE);
         userButton.setGraphic(userBtnIcon);
         userButton.setText("");
-        Tooltip.install(userButton, new Tooltip("Manage Account (" + shortcutSymbol + "A)"));
+        Tooltip.install(userButton, new Tooltip("Manage User Account (" + shortcutSymbol + "U)"));
 
 
         currentButton = userButton;
@@ -124,12 +218,24 @@ public class MainAppWindowController implements ChildControllerListener {
         });
     }
 
+    /**
+     * Called by child controllers when an exception occurs. Displays a toast
+     * message and logs the stack trace.
+     *
+     * @param e the exception thrown by a child controller
+     */
     @Override
     public void onError(Exception e) {
         showToast("Error: " + e.getMessage());
         e.printStackTrace();
     }
 
+    /**
+     * Registers keyboard shortcuts (Ctrl/Cmd + N/I/F/U) for major navigation
+     * actions in the active scene.
+     *
+     * @param scene the scene to register accelerators in
+     */
     private void registerShortcuts(Scene scene) {
         scene.getAccelerators().put(
                 new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN),
@@ -144,11 +250,16 @@ public class MainAppWindowController implements ChildControllerListener {
                 () -> onFilterButtonClick(null)
         );
         scene.getAccelerators().put(
-                new KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_DOWN),
+                new KeyCodeCombination(KeyCode.U, KeyCombination.SHORTCUT_DOWN),
                 () -> onUserButtonClicked(null)
         );
     }
 
+    /**
+     * Replaces the entire right-side content area with the provided UI node.
+     *
+     * @param content the node to display on the right side
+     */
     private void setRightPane(Node content) {
         rightSidePane.getChildren().clear();
         rightSidePane.getChildren().add(content);
@@ -157,41 +268,73 @@ public class MainAppWindowController implements ChildControllerListener {
         VBox.setVgrow(content, Priority.ALWAYS);
     }
 
+    /**
+     * Pushes the current right-side content to the navigation stack and then
+     * displays the provided content.
+     *
+     * @param content the new UI node to display
+     */
     private void setNewRightPane(Node content) {
         if (!rightSidePane.getChildren().isEmpty()) {
-            lastRightSideContent = rightSidePane.getChildren().get(0);
+            lastRightSideContents.push(rightSidePane.getChildren().get(0));
         }
 
         setRightPane(content);
     }
 
+    /**
+     * Navigates back to the previously displayed right-side view and restores
+     * the corresponding menu button state.
+     */
     public void goBack() {
-        if (lastRightSideContent == null) {
+        if (lastRightSideContents == null) {
             return;
         }
 
-        //TODO: ugly, but works, for updating the status in the lists
-        if (previousButton.equals(issuesButton)) {
-            onIssuesButtonClick(null);
-        } else if (previousButton.equals(filterButton)) {
+        Node lastNode = lastRightSideContents.pop();
+        if (lastNode.equals(filterContents)) {
             restoreFilteredIssuesView();
-            makeButtonActive(filterButton);
+        } else if (lastNode.equals(newIssueContents)) {
+            restoreCreatedIssueView();
+        } else if (lastNode.equals(issuesListContents)) {
+            restoreIssuesListView();
         } else {
-            setRightPane(lastRightSideContent);
-            makeButtonActive(previousButton);
+            setRightPane(lastRightSideContents.pop());
         }
+
+        makeButtonActive(lastMenuButtons.pop());
     }
 
+    /**
+     * Restores the cached New Issue view and sets input focus appropriately.
+     */
     private void restoreCreatedIssueView() {
         setRightPane(newIssueContents);
         newIssueController.setFocusOnTitle();
     }
 
+    /**
+     * Restores the cached Filter Issues view and refreshes its content.
+     */
     private void restoreFilteredIssuesView() {
         setRightPane(filterContents);
         filterController.refreshIssues();
     }
 
+    /**
+     * Restores the cached Issues List view.
+     */
+    private void restoreIssuesListView() {
+        setRightPane(issuesListContents);
+        issuesListController.refreshIssues();
+    }
+
+    /**
+     * Visually marks the given menu button as active (highlighted) and restores
+     * the previous button's appearance.
+     *
+     * @param button the button to activate, or null to deactivate all
+     */
     private void makeButtonActive(Button button) {
         if (currentButton != null) {
             FontIcon currentIcon = (FontIcon) currentButton.getGraphic();
@@ -199,7 +342,6 @@ public class MainAppWindowController implements ChildControllerListener {
             currentButton.setGraphic(currentIcon);
         }
 
-        previousButton = currentButton;
         currentButton = button;
 
         if (currentButton != null) {
@@ -209,6 +351,12 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * Opens or restores the Filter Issues view. If already loaded once, restores
+     * cached content instead of reloading FXML.
+     *
+     * @param event the UI action event (may be null)
+     */
     @FXML
     void onFilterButtonClick(ActionEvent event) {
         makeButtonActive(filterButton);
@@ -233,25 +381,43 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * Opens or restores the Issues List view. Initializes the controller on first
+     * load.
+     *
+     * @param event the UI action event (may be null)
+     */
     @FXML
     void onIssuesButtonClick(ActionEvent event) {
         makeButtonActive(issuesButton);
 
+        if (issuesListed) {
+            restoreIssuesListView();
+            return;
+        }
+
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("IssuesListView.fxml"));
         try {
-            HBox newContent = loader.load();
-            IssuesListController controller = loader.getController();
+            issuesListed = true;
+            issuesListContents = loader.load();
+            issuesListController = loader.getController();
 
-            controller.setParent(this);
-            controller.setExceptionListerner(this);
-            controller.initializeData();
+            issuesListController.setParent(this);
+            issuesListController.setExceptionListerner(this);
+            issuesListController.initializeData();
 
-            setNewRightPane(newContent);
+            setNewRightPane(issuesListContents);
         } catch (Exception e) {
             this.onError(e);
         }
     }
 
+    /**
+     * Opens or restores the New Issue creation view. If editing an issue, loads
+     * it into the view.
+     *
+     * @param event the UI action event (may be null)
+     */
     @FXML
     void onNewButtonClick(ActionEvent event) {
         makeButtonActive(newButton);
@@ -277,6 +443,11 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * Opens the user account management view and populates it with user data.
+     *
+     * @param event the UI action event (may be null)
+     */
     @FXML
     void onUserButtonClicked(ActionEvent event) {
         makeButtonActive(userButton);
@@ -295,7 +466,11 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
-
+    /**
+     * Displays the Issue View for the specified issue.
+     *
+     * @param issue the issue to display
+     */
     public void setIssuePane(Issue issue) {
         makeButtonActive(null);
 
@@ -313,6 +488,11 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * Adds a new issue to the IssueManager and resets creation state.
+     *
+     * @param issue the issue to add
+     */
     public void addIssue(Issue issue) {
         try {
             manager.addIssue(issue);
@@ -322,6 +502,13 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * Updates the specified issue with values from another Issue instance and
+     * resets creation state.
+     *
+     * @param issue    the target issue to update
+     * @param newValue the source containing updated field values
+     */
     public void updateIssue(Issue issue, Issue newValue) {
         try {
             issue.updateFrom(newValue);
@@ -331,8 +518,14 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * Opens the New Issue view pre-populated with the provided issue for editing.
+     *
+     * @param issue the issue to edit
+     */
     public void setEditIssuePane(Issue issue) {
-        makeButtonActive(newButton);
+        makeButtonActive(null);
+
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("NewIssueView.fxml"));
         try {
             issueUnderCreation = true;
@@ -349,22 +542,39 @@ public class MainAppWindowController implements ChildControllerListener {
         }
     }
 
+    /**
+     * @return a list of all issues managed by the system
+     */
     public List<Issue> getIssuesList() {
         return manager.getAllIssues();
     }
 
+    /**
+     * @return the currently active user (reporter)
+     */
     public User getReporter() {
         return user;
     }
 
+    /**
+     * @return the list of all users
+     */
     public List<User> getUsersList() {
         return users;
     }
 
+    /**
+     * @return the IssueManager used by this controller
+     */
     public IssueManager getManager() {
         return manager;
     }
 
+    /**
+     * Displays a temporary toast-style message at the bottom of the screen.
+     *
+     * @param message the message text to display
+     */
     public void showToast(String message) {
         Label toast = new Label(message);
         toast.getStyleClass().add("toast");

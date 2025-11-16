@@ -1,11 +1,10 @@
 package com.example.bugtracker20;
 
+import controller.MainAppWindowController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import model.*;
 
 import java.io.IOException;
@@ -66,7 +65,7 @@ public class HelloApplication extends Application {
                                     N/A
                                 </body></html>
                                 """,
-                        users.get(1), //reporter
+                        users.get(0), //reporter
                         LocalDate.now().plusDays(7).atStartOfDay(),
                         users.get(0), //assignee
                         BugStatus.IN_PROGRESS,

@@ -1,4 +1,4 @@
-package com.example.bugtracker20;
+package controller;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -16,57 +15,111 @@ import model.Issue;
 import model.User;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 /**
+ * Controller for the user account view. Displays user profile information,
+ * loads and filters the issues assigned to the user, and supports viewing
+ * individual issues from the table. Handles initialization of table columns
+ * and keyboard shortcuts.
  *
+ * @author Artur Twardzik
+ * @version 0.2
  */
 public class AccountController {
+    /**
+     * Reference to the main window controller for navigation and callbacks.
+     */
     private MainAppWindowController parent;
 
+    /**
+     * Observable list of issues assigned to the current user.
+     */
     private ObservableList<Issue> userIssues;
 
+    /**
+     * The user whose account information is displayed.
+     */
     private User user;
 
+    /**
+     * Label displaying account creation date.
+     */
     @FXML
     private Label activeSinceLabel;
 
+    /**
+     * Table column containing issue due dates.
+     */
     @FXML
     private TableColumn<Issue, String> dueDateCol;
 
+    /**
+     * Table column containing issue titles.
+     */
     @FXML
     private TableColumn<Issue, String> issueTitleCol;
 
+    /**
+     * Label displaying the last time the user was active.
+     */
     @FXML
     private Label lastSeenAtLabel;
 
+    /**
+     * Label displaying the user's given name.
+     */
     @FXML
     private Label nameLabel;
 
+    /**
+     * ImageView displaying the user's profile picture.
+     */
     @FXML
     private ImageView profilePhoto;
 
+    /**
+     * Table column containing the usernames of issue reporters.
+     */
     @FXML
     private TableColumn<Issue, String> reporterCol;
 
+    /**
+     * Label displaying the name of the user's primary role.
+     */
     @FXML
     private Label roleLabel;
 
+    /**
+     * Table column displaying or editing issue status values.
+     */
     @FXML
     private TableColumn<Issue, String> statusCol;
 
+    /**
+     * Label displaying the user's surname.
+     */
     @FXML
     private Label surnameLabel;
 
+    /**
+     * Table displaying issues assigned to the user.
+     */
     @FXML
     private TableView<Issue> tableView;
 
+    /**
+     * Label showing the user's username.
+     */
     @FXML
     private Label usernameLabel;
 
+    /**
+     * Initializes the account view once its FXML is loaded. Configures table
+     * styling, enables editing, initializes all table columns, and registers a
+     * keyboard shortcut (Ctrl/Cmd + O) to open the selected issue.
+     */
     @FXML
     public void initialize() {
         tableView.setStyle(
@@ -96,6 +149,11 @@ public class AccountController {
         });
     }
 
+    /**
+     * Configures the Issue Title column to display titles with tooltips and
+     * ellipsis when text overflows. Also enables double-click to open the issue
+     * in the main window.
+     */
     private void initializeIssueTitleCol() {
         issueTitleCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getTitle()));
@@ -134,11 +192,18 @@ public class AccountController {
         });
     }
 
+    /**
+     * Configures the Reporter column to display the username of the issue's reporter.
+     */
     private void initializeReporterCol() {
         reporterCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getReporter().getUsername()));
     }
 
+    /**
+     * Configures the Due Date column to display formatted due dates, or "N/A"
+     * when no due date is assigned.
+     */
     private void initializeDueDateCol() {
         dueDateCol.setCellValueFactory(cellData -> {
             String dueDate = cellData.getValue().getDueDate()
@@ -149,6 +214,10 @@ public class AccountController {
         });
     }
 
+    /**
+     * Configures the Status column to display and allow editing of issue status via
+     * a combo box. Updates the underlying issue object on edit commit.
+     */
     private void initializeStatusCol() {
         statusCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getStatus().name()));
@@ -158,10 +227,21 @@ public class AccountController {
         });
     }
 
+    /**
+     * Sets the parent controller that manages the main application window.
+     *
+     * @param parent the main window controller to associate with this account view
+     */
     public void setParent(MainAppWindowController parent) {
         this.parent = parent;
     }
 
+    /**
+     * Loads the user's profile information into labels, including username, name,
+     * roles, creation date, and last seen timestamp.
+     *
+     * @param user the user whose account information should be displayed
+     */
     public void setUser(User user) {
         usernameLabel.setText(user.getUsername());
         nameLabel.setText(user.getName());
@@ -172,6 +252,14 @@ public class AccountController {
         this.user = user;
     }
 
+    /**
+     * Sets and displays the list of issues assigned to the current user. Filters
+     * the provided list so that only issues assigned to this user appear in the
+     * table.
+     *
+     * @param userIssues a list of issues to filter and display
+     * @throws RuntimeException if called before a user is assigned via {@link #setUser(User)}
+     */
     public void setUserIssues(List<Issue> userIssues) {
         if (user == null) {
             throw new RuntimeException("You should log in first");

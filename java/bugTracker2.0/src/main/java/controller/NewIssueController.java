@@ -1,5 +1,6 @@
-package com.example.bugtracker20;
+package controller;
 
+import com.example.bugtracker20.ChildControllerListener;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,46 +15,98 @@ import model.*;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+/**
+ * Controller responsible for creating and editing issues in the application.
+ * Manages the new issue form, including fields for title, description, assignee,
+ * status, priority, due date, and tags. Handles validation, issue creation or
+ * update, and delegates persistence and navigation actions to the main controller.
+ *
+ * @author Artur Twardzik
+ * @version 0.2
+ */
 public class NewIssueController {
+    /**
+     * Reference to the main application controller for navigation, issue management, and shared data access.
+     */
     private MainAppWindowController parent;
 
+    /**
+     * The issue currently being created or edited; null if creating a new issue.
+     */
     private Issue issue;
 
+    /**
+     * ComboBox allowing the selection of a user to assign the issue to.
+     */
     @FXML
     private ComboBox<User> assigneeComboBox;
 
+    /**
+     * Button for returning to the previous view without saving changes.
+     */
     @FXML
     private Button backBtn;
 
+    /**
+     * Button used to create a new issue or save edits to an existing issue.
+     */
     @FXML
     private Button createBtn;
 
+    /**
+     * Root HBox of the new issue scene, used for scene-level event handling.
+     */
     @FXML
     private HBox newIssueScene;
 
+    /**
+     * DatePicker used to select the issue's due date.
+     */
     @FXML
     private DatePicker dueDate;
 
+    /**
+     * ComboBox for selecting the priority level of the issue.
+     */
     @FXML
     private ComboBox<Priority> priorityComboBox;
 
+    /**
+     * ComboBox for selecting the status of the issue (e.g., OPEN, CLOSED).
+     */
     @FXML
     private ComboBox<BugStatus> statusComboBox;
 
+    /**
+     * TextField for entering tags associated with the issue.
+     */
     @FXML
     private TextField tagsField;
 
+    /**
+     * HTMLEditor used to enter the issue description with rich text formatting.
+     */
     @FXML
     private HTMLEditor textEditor;
 
+    /**
+     * TextField for entering the title of the issue.
+     */
     @FXML
     private TextField titleField;
 
+    /**
+     * Callback used to report exceptions back to the parent controller.
+     */
     private ChildControllerListener listener;
 
+    /**
+     * JavaFX initialization method. Sets up tooltips, keyboard shortcuts
+     * (Ctrl/Cmd + Enter for create/save, Ctrl/Cmd + R for back), and populates
+     * ComboBoxes for assignees, status, and priority with default values.
+     */
     @FXML
     private void initialize() {
         String shortcutSymbol = System.getProperty("os.name").toLowerCase().contains("mac") ? "⌘" : "Ctrl+";
@@ -94,11 +147,25 @@ public class NewIssueController {
         priorityComboBox.setValue(Priority.LOW);
     }
 
+    /**
+     * Event handler triggered when the back button is clicked.
+     * Delegates returning to the previous view to the main controller.
+     *
+     * @param event the action event
+     */
     @FXML
     void backBtnClicked(ActionEvent event) {
         parent.goBack();
     }
 
+    /**
+     * Event handler triggered when the create/save button is clicked.
+     * Validates title and description fields, creates a new {@link Issue} or
+     * updates an existing one, assigns tags and due date, and delegates persistence
+     * to the main controller. Displays toast notifications for feedback.
+     *
+     * @param event the action event
+     */
     @FXML
     void createBtnClicked(ActionEvent event) {
         titleField.getStyleClass().remove("error-field");
@@ -165,6 +232,12 @@ public class NewIssueController {
         parent.setIssuePane(issue);
     }
 
+    /**
+     * Sets the current issue to be edited. Populates all relevant UI fields
+     * with the issue's data and updates the create/save button label.
+     *
+     * @param issue the issue to edit
+     */
     public void setIssue(Issue issue) {
         this.issue = issue;
 
@@ -177,14 +250,29 @@ public class NewIssueController {
         createBtn.setText("Save");
     }
 
+    /**
+     * Sets the parent main window controller for navigation and shared data access.
+     *
+     * @param mainWindow the main application window controller
+     */
     public void setParent(MainAppWindowController mainWindow) {
         this.parent = mainWindow;
     }
 
+    /**
+     * Registers an exception listener to report errors that occur during
+     * issue creation or update.
+     *
+     * @param eventListerner the listener to notify on exceptions
+     */
     public void setExceptionListerner(ChildControllerListener eventListerner) {
         this.listener = eventListerner;
     }
 
+    /**
+     * Requests focus on the title field, typically used when the view is first
+     * displayed to improve user experience.
+     */
     public void setFocusOnTitle() {
         Platform.runLater(() -> titleField.requestFocus());
     }

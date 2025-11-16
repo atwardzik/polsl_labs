@@ -1,4 +1,4 @@
-package com.example.bugtracker20;
+package controller;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -12,17 +12,61 @@ import model.Issue;
 
 import java.time.format.DateTimeFormatter;
 
+/**
+ * A custom {@link ListCell} implementation for displaying {@link Issue} objects
+ * inside a {@link javafx.scene.control.ListView}. <br>
+ * <br>
+ * The cell shows:
+ * <ul>
+ *     <li>Status indicator (colored circle)</li>
+ *     <li>Issue ID (short form)</li>
+ *     <li>Title</li>
+ *     <li>Author</li>
+ *     <li>Date opened</li>
+ *     <li>Due date</li>
+ * </ul>
+ * The layout is built using a {@link GridPane} with percentage-based column widths.
+ *
+ * @author Artur Twardzik
+ * @version 0.2
+ */
 public class IssueCell extends ListCell<Issue> {
 
+    /**
+     * Layout container used to arrange all issue-related labels in a row.
+     */
     private GridPane grid = new GridPane();
 
+    /**
+     * Small colored circle indicating the current {@link BugStatus} of the issue.
+     */
     private Circle statusCircle = new Circle(6);
+    /**
+     * Label displaying the shortened issue ID (first segment of the UUID).
+     */
     private Label idLabel = new Label();
+    /**
+     * Label displaying the title of the issue.
+     */
     private Label titleLabel = new Label();
+    /**
+     * Label showing the username of the issue reporter.
+     */
     private Label authorLabel = new Label();
+    /**
+     * Label displaying the date when the issue was created.
+     */
     private Label dateOpenedLabel = new Label();
+    /**
+     * Label displaying the issue's due date, if present.
+     */
     private Label dueDateLabel = new Label();
 
+    /**
+     * Constructs a new {@code IssueCell} and initializes the layout, column
+     * constraints, style classes, and graphical components used to render
+     * issue information inside a {@link javafx.scene.control.ListView}.
+     */
     public IssueCell() {
         grid.setHgap(10);
         grid.setPadding(new Insets(5));
@@ -72,6 +116,15 @@ public class IssueCell extends ListCell<Issue> {
         dueDateLabel.getStyleClass().add("issue-due-date");
     }
 
+    /**
+     * Updates the visual representation of this cell based on the provided
+     * {@link Issue}. If the cell is empty, the graphic is cleared; otherwise,
+     * all labels and indicators are populated with data from the issue and
+     * rendered inside the preconfigured layout.
+     *
+     * @param issue the issue to display, or {@code null} if the cell is empty
+     * @param empty whether the cell represents no data
+     */
     @Override
     protected void updateItem(Issue issue, boolean empty) {
         super.updateItem(issue, empty);
@@ -105,6 +158,13 @@ public class IssueCell extends ListCell<Issue> {
         }
     }
 
+    /**
+     * Returns the {@link Color} associated with the given {@link BugStatus}.
+     * The color is used to fill the status indicator circle in the list cell.
+     *
+     * @param status the issue status
+     * @return the UI color mapped to the status (e.g., green for OPEN)
+     */
     private Color getStatusColor(BugStatus status) {
         Color color = null;
         switch (status) {
