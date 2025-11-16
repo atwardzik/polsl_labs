@@ -1,10 +1,13 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Enum holding a bug status
  *
  * @author Artur Twardzik
- * @version 0.1
+ * @version 0.2
  */
 public enum BugStatus {
     OPEN(1),
@@ -40,5 +43,26 @@ public enum BugStatus {
             }
         }
         throw new IllegalArgumentException("Unknown BugStatus code: " + code);
+    }
+
+    public String getStatusName() {
+        String name = "";
+
+        switch (this) {
+            case OPEN -> name = "Open";
+            case CLOSED -> name = "Closed";
+            case IN_PROGRESS -> name = "In progress";
+            case REOPENED -> name = "Reopened";
+        }
+
+        return name;
+    }
+
+    public static String[] toArrayOfStrings() {
+        List<String> result = new ArrayList<>();
+        for (var el : BugStatus.values()) {
+            result.add(el.name());
+        }
+        return result.toArray(String[]::new);
     }
 }

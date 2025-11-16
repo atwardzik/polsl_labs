@@ -114,6 +114,7 @@ public class MainAppWindowController implements ChildControllerListener {
         mainBorderPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 registerShortcuts(newScene);
+                onUserButtonClicked(null);
             }
         });
     }
@@ -240,6 +241,8 @@ public class MainAppWindowController implements ChildControllerListener {
         try {
             HBox newContent = loader.load();
             AccountController controller = loader.getController();
+            controller.setParent(this);
+            controller.setUserIssues(getIssuesList());
 
             setNewRightPane(newContent);
         } catch (Exception e) {

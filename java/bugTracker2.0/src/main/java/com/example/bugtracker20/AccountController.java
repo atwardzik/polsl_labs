@@ -1,16 +1,26 @@
 package com.example.bugtracker20;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import model.BugStatus;
 import model.Issue;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class AccountController {
+    private MainAppWindowController parent;
+
+    private ObservableList<Issue> userIssues;
+
 
     @FXML
     private Label activeSinceLabel;
@@ -37,7 +47,7 @@ public class AccountController {
     private Label roleLabel;
 
     @FXML
-    private TableColumn<Issue, BugStatus> statusCol;
+    private TableColumn<Issue, String> statusCol;
 
     @FXML
     private Label surnameLabel;
@@ -48,59 +58,89 @@ public class AccountController {
     @FXML
     private Label usernameLabel;
 
+    @FXML
+    public void initialize() {
+        tableView.setStyle(
+                "-fx-font-family: 'JetBrains Mono';" + "-fx-font-size: 14px;"
+        );
 
-//    public TableController(People people) {
-//        this.people = people;
-//        data = FXCollections.observableArrayList(people.getData());
-//        data.addListener((ListChangeListener.Change<? extends Person> change) -> {
-//            while (change.next()) {
-//                if (change.wasPermutated()) {
-//                    for (int i = change.getFrom(); i < change.getTo(); ++i) {
-//                        System.out.println("zamiana");
-//                    }
-//                } else if (change.wasUpdated()) {
-//                    System.out.println("uaktualnienie");
-//                } else {
-//                    for (var remitem : change.getRemoved()) {
-//                        people.getData().remove(remitem);
-//                    }
-//                    for (var additem : change.getAddedSubList()) {
-//                        people.getData().add(additem);
-//                    }
-//                }
-//            }
-//        });
-//    }
-//
-//    private void initializeFirstNameColumn() {
-//        firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-//        firstNameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-//        firstNameColumn.setOnEditCommit(t -> {
-//            (t.getTableView().getItems().get(t.getTablePosition().getRow())).setFirstName(t.getNewValue());
-//        });
-//    }
-//      ...
-//
-//
-//    public void initialize() {
-//
-//        var tooltip = new Tooltip("Przycisk aktywuje proces dodania nowej osoby.");
-//        tooltip.setStyle("-fx-font: normal bold 14 Langdon; -fx-base: #AE3522; -fx-text-fill: orange;");
-//        addButton.setTooltip(tooltip);
-//
-//        genderCombobox.getItems().addAll(Gender.toArrayOfStrings());
-//
-//        table.setItems(data);
-//        table.setEditable(true);
-//
-//        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-//
-//        initializeFirstNameColumn();
-//        initializeLastNameColumn();
-//        initializeEmailColumn();
-//        initializeVipColumn();
-//        initializeGenderColumn();
-//        initializeDateOfBirthColumnColumn();
-//    }
+        tableView.setEditable(true);
+        statusCol.setEditable(true);
 
+        initializeIssueTitleCol();
+        initializeDueDateCol();
+        initializeStatusCol();
+        initializeReporterCol();
+    }
+
+    private void initializeIssueTitleCol() {
+        issueTitleCol.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getTitle()));
+        issueTitleCol.setCellFactory(col -> {
+            TableCell<Issue, String> cell = new TableCell<>() {
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (empty || item == null) {
+                        setText(null);
+                        setTooltip(null);
+                    } else {
+                        setText(item);
+
+                        Tooltip tooltip = new Tooltip(item);
+                        setTooltip(tooltip);
+
+                        setStyle("-fx-text-overrun: ellipsis;");
+                    }
+
+                    setText(item);
+                }
+            };
+
+            cell.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !cell.isEmpty()) {
+                    Issue issue = cell.getTableView().getItems().get(cell.getIndex());
+
+                    parent.setIssuePane(issue);
+                }
+            });
+
+            return cell;
+        });
+    }
+
+    private void initializeReporterCol() {
+        reporterCol.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getReporter().getUsername()));
+    }
+
+    private void initializeDueDateCol() {
+        dueDateCol.setCellValueFactory(cellData -> {
+            String dueDate = cellData.getValue().getDueDate()
+                    .map(date -> date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                    .orElse("N/A");
+
+            return new SimpleStringProperty(dueDate);
+        });
+    }
+
+    private void initializeStatusCol() {
+        statusCol.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getStatus().name()));
+        statusCol.setCellFactory(ComboBoxTableCell.<Issue, String>forTableColumn(BugStatus.toArrayOfStrings()));
+        statusCol.setOnEditCommit(t -> {
+            (t.getTableView().getItems().get(t.getTablePosition().getRow())).setStatus(BugStatus.valueOf(t.getNewValue()));
+        });
+    }
+
+    public void setParent(MainAppWindowController parent) {
+        this.parent = parent;
+    }
+
+    public void setUserIssues(List<Issue> userIssues) {
+        this.userIssues = FXCollections.observableArrayList(userIssues);
+        tableView.setItems(this.userIssues);
+    }
 }
