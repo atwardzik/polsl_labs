@@ -45,6 +45,11 @@ public enum BugStatus {
         throw new IllegalArgumentException("Unknown BugStatus code: " + code);
     }
 
+    /**
+     * Converts enum value for pretty name
+     *
+     * @return String containing pretty name (without underscores)
+     */
     public String getStatusName() {
         String name = "";
 
@@ -58,6 +63,11 @@ public enum BugStatus {
         return name;
     }
 
+    /**
+     * Converts enum values to the string array for the purposes of ComboBox
+     *
+     * @return array of Strings representing enum names
+     */
     public static String[] toArrayOfStrings() {
         List<String> result = new ArrayList<>();
         for (var el : BugStatus.values()) {

@@ -101,3 +101,18 @@
     -fx-control-inner-background: #fff;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 14, 0.5, 0, 6);
 }
+
+.combo-box-popup .list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: lightblue;
+    -fx-text-fill: white;
+}
+
+.combo-box-popup .list-cell {
+    -fx-font-family: "JetBrains Mono";
+    -fx-font-size: 13px;
+}

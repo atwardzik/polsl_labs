@@ -8,19 +8,28 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import model.BugStatus;
 import model.Issue;
+import model.User;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ *
+ */
 public class AccountController {
     private MainAppWindowController parent;
 
     private ObservableList<Issue> userIssues;
 
+    private User user;
 
     @FXML
     private Label activeSinceLabel;
@@ -71,6 +80,20 @@ public class AccountController {
         initializeDueDateCol();
         initializeStatusCol();
         initializeReporterCol();
+
+        tableView.sceneProperty().addListener((obs, old, newScene) -> {
+            if (newScene != null) {
+                newScene.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.O, KeyCombination.SHORTCUT_DOWN),
+                        () -> {
+                            Issue selected = tableView.getSelectionModel().getSelectedItem();
+                            if (selected != null) {
+                                parent.setIssuePane(selected);
+                            }
+                        }
+                );
+            }
+        });
     }
 
     private void initializeIssueTitleCol() {
@@ -139,7 +162,16 @@ public class AccountController {
         this.parent = parent;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public void setUserIssues(List<Issue> userIssues) {
+        if (user == null) {
+            throw new RuntimeException("You should log in first");
+        }
+        userIssues = userIssues.stream().filter(issue -> Objects.equals(issue.getAssignee().orElse(null), user)).toList();
+
         this.userIssues = FXCollections.observableArrayList(userIssues);
         tableView.setItems(this.userIssues);
     }

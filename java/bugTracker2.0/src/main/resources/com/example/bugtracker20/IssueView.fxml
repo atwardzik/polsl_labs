@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<HBox minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.bugtracker20.IssueViewController">
+<HBox fx:id="issueViewScene" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.bugtracker20.IssueViewController">
    <children>
       <VBox prefHeight="400.0" prefWidth="600.0" HBox.hgrow="ALWAYS">
          <children>
@@ -20,7 +20,35 @@
                   <Font name="JetBrains Mono Regular" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="dateLabel" text="Date:">
+            <HBox>
+               <children>
+                  <Label fx:id="dateOpenedLabel" text="Opened on:">
+                     <font>
+                        <Font name="JetBrains Mono Regular" size="12.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label fx:id="dueDateLabel" text="Due on:">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="50.0" right="10.0" top="5.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font name="JetBrains Mono Regular" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <Label fx:id="statusLabel" text="Status:">
+               <VBox.margin>
+                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+               </VBox.margin>
+               <font>
+                  <Font name="JetBrains Mono Regular" size="12.0" />
+               </font>
+            </Label>
+            <Label fx:id="priorityLabel" text="Priority:">
                <VBox.margin>
                   <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
                </VBox.margin>
@@ -33,7 +61,7 @@
                   <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
                </VBox.margin>
                <font>
-                  <Font name="JetBrains Mono Regular" size="12.0" />
+                  <Font name="JetBrains Mono Bold" size="16.0" />
                </font>
             </Label>
             <WebView fx:id="descriptionWebView" styleClass="issue-description" stylesheets="@app.css" VBox.vgrow="ALWAYS">

@@ -93,8 +93,11 @@ public class IssueCell extends ListCell<Issue> {
 
             titleLabel.setText(issue.getTitle());
             authorLabel.setText(issue.getReporter().getUsername());
-            dateOpenedLabel.setText(issue.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            dueDateLabel.setText(issue.getDueDate().isPresent() ? issue.getDueDate().toString() : "");
+            dateOpenedLabel.setText(issue.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+            dueDateLabel.setText(issue.getDueDate()
+                    .map(date -> date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                    .orElse("")
+            );
 
             VBox wrapper = new VBox(grid);
             wrapper.setPadding(new Insets(0, 0, 10, 0));

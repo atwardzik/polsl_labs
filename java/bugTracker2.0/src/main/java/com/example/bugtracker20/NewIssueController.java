@@ -62,6 +62,10 @@ public class NewIssueController {
                         new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN),
                         () -> createBtnClicked(null)
                 );
+                newScene.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.R, KeyCombination.SHORTCUT_DOWN),
+                        () -> backBtnClicked(null)
+                );
             }
         });
     }

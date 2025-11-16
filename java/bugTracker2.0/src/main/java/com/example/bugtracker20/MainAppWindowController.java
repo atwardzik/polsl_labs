@@ -64,6 +64,7 @@ public class MainAppWindowController implements ChildControllerListener {
     @FXML
     private Button userButton;
 
+    private Button previousButton;
     private Button currentButton;
 
     public MainAppWindowController(IssueManager manager, List<User> users) {
@@ -166,6 +167,7 @@ public class MainAppWindowController implements ChildControllerListener {
         }
 
         setRightPane(lastRightSideContent);
+        makeButtonActive(previousButton);
     }
 
     public void restoreCreatedIssueView() {
@@ -177,6 +179,8 @@ public class MainAppWindowController implements ChildControllerListener {
         FontIcon currentIcon = (FontIcon) currentButton.getGraphic();
         currentIcon.setIconColor(Color.WHITE);
         currentButton.setGraphic(currentIcon);
+
+        previousButton = currentButton;
 
         currentButton = button;
         currentIcon = (FontIcon) currentButton.getGraphic();
@@ -242,6 +246,7 @@ public class MainAppWindowController implements ChildControllerListener {
             HBox newContent = loader.load();
             AccountController controller = loader.getController();
             controller.setParent(this);
+            controller.setUser(user);
             controller.setUserIssues(getIssuesList());
 
             setNewRightPane(newContent);

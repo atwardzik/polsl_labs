@@ -4,13 +4,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import model.Issue;
 
 public class IssuesListController {
     @FXML
     private ListView<Issue> issuesList;
 
-    MainAppWindowController mainWindowController;
+    MainAppWindowController parent;
 
     private ChildControllerListener listener;
 
@@ -21,7 +24,7 @@ public class IssuesListController {
                 Issue selectedIssue = issuesList.getSelectionModel().getSelectedItem();
                 if (selectedIssue != null) {
                     try {
-                        mainWindowController.setIssuePane(selectedIssue);
+                        parent.setIssuePane(selectedIssue);
                     } catch (Exception e) {
                         if (this.listener != null) {
                             this.listener.onError(e);
@@ -30,14 +33,27 @@ public class IssuesListController {
                 }
             }
         });
+        issuesList.sceneProperty().addListener((obs, old, newScene) -> {
+            if (newScene != null) {
+                newScene.getAccelerators().put(
+                        new KeyCodeCombination(KeyCode.O, KeyCombination.SHORTCUT_DOWN),
+                        () -> {
+                            Issue selected = issuesList.getSelectionModel().getSelectedItem();
+                            if (selected != null) {
+                                parent.setIssuePane(selected);
+                            }
+                        }
+                );
+            }
+        });
         ObservableList<Issue> list = FXCollections.observableArrayList();
 
-        list.addAll(mainWindowController.getIssuesList());
+        list.addAll(parent.getIssuesList());
         issuesList.setItems(list);
     }
 
     public void setParent(MainAppWindowController mainWindowController) {
-        this.mainWindowController = mainWindowController;
+        this.parent = mainWindowController;
     }
 
     public void setExceptionListerner(ChildControllerListener eventListerner) {
