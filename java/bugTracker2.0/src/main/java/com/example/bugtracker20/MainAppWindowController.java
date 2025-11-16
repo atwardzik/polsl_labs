@@ -26,6 +26,7 @@ import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import model.Issue;
 import model.IssueManager;
 
+import java.nio.file.DirectoryStream;
 import java.util.List;
 
 public class MainAppWindowController implements ChildControllerListener {
@@ -38,10 +39,12 @@ public class MainAppWindowController implements ChildControllerListener {
     private Node lastRightSideContent;
 
     private boolean issueUnderCreation;
-
     private Node newIssueContents;
     private NewIssueController newIssueController;
 
+    private boolean issuesFiltered;
+    private Node filterContents;
+    private FilterController filterController;
 
     @FXML
     private Button filterButton;
@@ -72,6 +75,7 @@ public class MainAppWindowController implements ChildControllerListener {
         this.users = users;
 
         issueUnderCreation = false;
+        issuesFiltered = false;
 
         //TODO: REPLACE
         user = users.get(0);
@@ -166,31 +170,67 @@ public class MainAppWindowController implements ChildControllerListener {
             return;
         }
 
-        setRightPane(lastRightSideContent);
-        makeButtonActive(previousButton);
+        //TODO: ugly, but works, for updating the status in the lists
+        if (previousButton.equals(issuesButton)) {
+            onIssuesButtonClick(null);
+        } else if (previousButton.equals(filterButton)) {
+            restoreFilteredIssuesView();
+            makeButtonActive(filterButton);
+        } else {
+            setRightPane(lastRightSideContent);
+            makeButtonActive(previousButton);
+        }
     }
 
-    public void restoreCreatedIssueView() {
+    private void restoreCreatedIssueView() {
         setRightPane(newIssueContents);
         newIssueController.setFocusOnTitle();
     }
 
+    private void restoreFilteredIssuesView() {
+        setRightPane(filterContents);
+        filterController.refreshIssues();
+    }
+
     private void makeButtonActive(Button button) {
-        FontIcon currentIcon = (FontIcon) currentButton.getGraphic();
-        currentIcon.setIconColor(Color.WHITE);
-        currentButton.setGraphic(currentIcon);
+        if (currentButton != null) {
+            FontIcon currentIcon = (FontIcon) currentButton.getGraphic();
+            currentIcon.setIconColor(Color.WHITE);
+            currentButton.setGraphic(currentIcon);
+        }
 
         previousButton = currentButton;
-
         currentButton = button;
-        currentIcon = (FontIcon) currentButton.getGraphic();
-        currentIcon.setIconColor(Color.LIGHTBLUE);
-        currentButton.setGraphic(currentIcon);
+
+        if (currentButton != null) {
+            FontIcon currentIcon = (FontIcon) currentButton.getGraphic();
+            currentIcon.setIconColor(Color.LIGHTBLUE);
+            currentButton.setGraphic(currentIcon);
+        }
     }
 
     @FXML
     void onFilterButtonClick(ActionEvent event) {
+        makeButtonActive(filterButton);
 
+        if (issuesFiltered) {
+            restoreFilteredIssuesView();
+            return;
+        }
+
+        FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("FilterView.fxml"));
+        try {
+            issuesFiltered = true;
+            filterContents = loader.load();
+            filterController = loader.getController();
+
+            filterController.setParent(this);
+            filterController.setExceptionListerner(this);
+
+            setNewRightPane(filterContents);
+        } catch (Exception e) {
+            this.onError(e);
+        }
     }
 
     @FXML
@@ -257,7 +297,8 @@ public class MainAppWindowController implements ChildControllerListener {
 
 
     public void setIssuePane(Issue issue) {
-        makeButtonActive(issuesButton);
+        makeButtonActive(null);
+
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("IssueView.fxml"));
         try {
             HBox newContent = loader.load();
@@ -314,6 +355,14 @@ public class MainAppWindowController implements ChildControllerListener {
 
     public User getReporter() {
         return user;
+    }
+
+    public List<User> getUsersList() {
+        return users;
+    }
+
+    public IssueManager getManager() {
+        return manager;
     }
 
     public void showToast(String message) {

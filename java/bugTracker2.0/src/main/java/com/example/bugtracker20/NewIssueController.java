@@ -11,19 +11,19 @@ import javafx.scene.layout.HBox;
 import javafx.scene.web.HTMLEditor;
 import model.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class NewIssueController {
-    private MainAppWindowController mainWindow;
+    private MainAppWindowController parent;
 
     private Issue issue;
 
     @FXML
-    private Spinner<User> asigneeSpinner;
+    private ComboBox<User> assigneeComboBox;
 
     @FXML
     private Button backBtn;
@@ -38,10 +38,10 @@ public class NewIssueController {
     private DatePicker dueDate;
 
     @FXML
-    private Spinner<Priority> prioritySpinner;
+    private ComboBox<Priority> priorityComboBox;
 
     @FXML
-    private Spinner<BugStatus> statusSpinner;
+    private ComboBox<BugStatus> statusComboBox;
 
     @FXML
     private TextField tagsField;
@@ -56,6 +56,9 @@ public class NewIssueController {
 
     @FXML
     private void initialize() {
+        String shortcutSymbol = System.getProperty("os.name").toLowerCase().contains("mac") ? "⌘" : "Ctrl+";
+        Tooltip.install(createBtn, new Tooltip("Save (" + shortcutSymbol + "↩)"));
+        Tooltip.install(backBtn, new Tooltip("Get Back (" + shortcutSymbol + "R)"));
         newIssueScene.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.getAccelerators().put(
@@ -66,13 +69,34 @@ public class NewIssueController {
                         new KeyCodeCombination(KeyCode.R, KeyCombination.SHORTCUT_DOWN),
                         () -> backBtnClicked(null)
                 );
+
+                assigneeComboBox.getItems().addAll(parent.getUsersList());
+                assigneeComboBox.setCellFactory(listView -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(User user, boolean empty) {
+                        super.updateItem(user, empty);
+                        setText(empty || user == null ? null : user.getUsername());
+                    }
+                });
+                assigneeComboBox.setButtonCell(new ListCell<>() {
+                    @Override
+                    protected void updateItem(User user, boolean empty) {
+                        super.updateItem(user, empty);
+                        setText(empty || user == null ? null : user.getUsername());
+                    }
+                });
             }
         });
+
+        statusComboBox.getItems().addAll(BugStatus.values());
+        statusComboBox.setValue(BugStatus.OPEN);
+        priorityComboBox.getItems().addAll(Priority.values());
+        priorityComboBox.setValue(Priority.LOW);
     }
 
     @FXML
     void backBtnClicked(ActionEvent event) {
-        mainWindow.goBack();
+        parent.goBack();
     }
 
     @FXML
@@ -83,7 +107,7 @@ public class NewIssueController {
         if (titleField.getText().isBlank()) {
             titleField.getStyleClass().add("error-field");
 
-            mainWindow.showToast("Title should not be empty!");
+            parent.showToast("Title should not be empty!");
             return;
         }
 
@@ -92,13 +116,13 @@ public class NewIssueController {
         if (textOnly.isBlank()) {
             textEditor.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
 
-            mainWindow.showToast("Description should not be empty!");
+            parent.showToast("Description should not be empty!");
             return;
         }
 
-        User user = mainWindow.getReporter();
+        User user = parent.getReporter();
         if (user == null) {
-            mainWindow.showToast("You are not logged in!");
+            parent.showToast("You are not logged in!");
             return;
         }
 
@@ -114,8 +138,8 @@ public class NewIssueController {
         try {
             newIssue = new Issue(titleField.getText(), textEditor.getHtmlText(),
                     user, dueDateStart,
-                    asigneeSpinner.getValue(), statusSpinner.getValue(),
-                    prioritySpinner.getValue(), tokenSet);
+                    null, statusComboBox.getValue(),
+                    priorityComboBox.getValue(), tokenSet);
 
         } catch (Exception e) {
             if (this.listener != null) {
@@ -131,14 +155,14 @@ public class NewIssueController {
         if (issue == null) {
             issue = newIssue;
             createBtn.setText("Save");
-            mainWindow.addIssue(issue);
-            mainWindow.showToast("New Issue Created");
+            parent.addIssue(issue);
+            parent.showToast("New Issue Created");
         } else {
-            mainWindow.updateIssue(issue, newIssue);
-            mainWindow.showToast("Issue updated successfully");
+            parent.updateIssue(issue, newIssue);
+            parent.showToast("Issue updated successfully");
         }
 
-        mainWindow.setIssuePane(issue);
+        parent.setIssuePane(issue);
     }
 
     public void setIssue(Issue issue) {
@@ -154,7 +178,7 @@ public class NewIssueController {
     }
 
     public void setParent(MainAppWindowController mainWindow) {
-        this.mainWindow = mainWindow;
+        this.parent = mainWindow;
     }
 
     public void setExceptionListerner(ChildControllerListener eventListerner) {

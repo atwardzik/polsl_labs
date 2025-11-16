@@ -163,6 +163,12 @@ public class AccountController {
     }
 
     public void setUser(User user) {
+        usernameLabel.setText(user.getUsername());
+        nameLabel.setText(user.getName());
+        surnameLabel.setText(user.getSurname());
+        roleLabel.setText(user.getRoles().getFirst().getRoleName());
+        activeSinceLabel.setText("Active since: " + user.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        lastSeenAtLabel.setText("Last seen on: " + user.getLastSeenAt().map(date -> date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))).orElse("N/A"));
         this.user = user;
     }
 

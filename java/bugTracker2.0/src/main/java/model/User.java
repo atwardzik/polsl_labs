@@ -78,6 +78,10 @@ public class User {
         return Optional.ofNullable(lastSeenAt);
     }
 
+    public void addRole(UserRole role) {
+        this.roles.set(0, role);
+    }
+
     /**
      * Gets the user's first name.
      *

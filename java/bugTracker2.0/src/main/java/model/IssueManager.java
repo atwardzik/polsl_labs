@@ -4,13 +4,14 @@
  */
 package model;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
  * Class holding all issues
  *
  * @author Artur Twardzik
- * @version 0.1
+ * @version 0.2
  */
 public class IssueManager {
     /**
@@ -127,17 +128,147 @@ public class IssueManager {
      * @return a list of issues that contain the specified tag
      */
     public List<Issue> filterByTag(String tag) {
-        List<Issue> issuesWithTag = new ArrayList<>();
+        List<Issue> matchingIssues = new ArrayList<>();
 
         for (Issue issue : issues) {
             Set<String> issueTags = issue.getTags();
 
             if (issueTags.contains(tag)) {
-                issuesWithTag.add(issue);
+                matchingIssues.add(issue);
             }
         }
 
-        return issuesWithTag;
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues by a given author.
+     *
+     * @param user the user to filter by
+     * @return a list of issues created by specified author
+     */
+    public List<Issue> filterByAuthor(User user) {
+        List<Issue> matchingIssues = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            if (issue.getReporter().equals(user)) {
+                matchingIssues.add(issue);
+            }
+        }
+
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues created after specified date
+     *
+     * @param start the date
+     * @return a list of issues created after specified date
+     */
+    public List<Issue> filterByDateAfter(LocalDateTime start) {
+        List<Issue> matchingIssues = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            if (issue.getCreatedAt().isAfter(start)) {
+                matchingIssues.add(issue);
+            }
+        }
+
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues created before specified date
+     *
+     * @param end the date
+     * @return a list of issues created before specified date
+     */
+    public List<Issue> filterByDateBefore(LocalDateTime end) {
+        List<Issue> matchingIssues = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            if (issue.getCreatedAt().isBefore(end)) {
+                matchingIssues.add(issue);
+            }
+        }
+
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues starting with given id
+     *
+     * @param issueID the id fragment
+     * @return a list of issues starting with specified if fragment
+     */
+    public List<Issue> filterByIdFragment(String issueID) {
+        List<Issue> matchingIssues = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            if (issue.getId().toString().startsWith(issueID)) {
+                matchingIssues.add(issue);
+            }
+        }
+
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues with given priority
+     *
+     * @param priority given priority
+     * @return a list of issues with given priority
+     */
+    public List<Issue> filterByPriority(Priority priority) {
+        List<Issue> matchingIssues = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            if (issue.getPriority() == priority) {
+                matchingIssues.add(issue);
+            }
+        }
+
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues with given status
+     *
+     * @param status given status
+     * @return a list of issues with given status
+     */
+    public List<Issue> filterByStatus(BugStatus status) {
+        List<Issue> matchingIssues = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            if (issue.getStatus() == status) {
+                matchingIssues.add(issue);
+            }
+        }
+
+        return matchingIssues;
+    }
+
+    /**
+     * Filters issues similar to given title
+     *
+     * @param title title to search for
+     * @return a list of issues similar to given title
+     */
+    public List<Issue> filterByTitle(String title) {
+        if (title == null || title.isEmpty()) {
+            return new ArrayList<>(issues); // return all if no filter
+        }
+
+        String lowerTitle = title.toLowerCase();
+
+        List<Issue> matchingIssues = new ArrayList<>();
+        for (Issue issue : issues) {
+            if (issue.getTitle() != null && issue.getTitle().toLowerCase().contains(lowerTitle)) {
+                matchingIssues.add(issue);
+            }
+        }
+        return matchingIssues;
     }
 
     /**
@@ -146,6 +277,8 @@ public class IssueManager {
      * @return a list of all issues
      */
     public List<Issue> getAllIssues() {
-        return issues;
+        List<Issue> copy = new ArrayList<>(issues);
+
+        return copy;
     }
 }

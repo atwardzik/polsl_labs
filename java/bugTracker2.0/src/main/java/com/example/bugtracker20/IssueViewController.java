@@ -4,20 +4,23 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
+import model.BugStatus;
 import model.Issue;
 
 import java.time.format.DateTimeFormatter;
 
 
 public class IssueViewController {
-    MainAppWindowController mainWindow;
+    MainAppWindowController parent;
 
     Issue issue;
 
@@ -46,7 +49,7 @@ public class IssueViewController {
     private HBox issueViewScene;
 
     @FXML
-    private Button markStatusBtn;
+    private ComboBox<BugStatus> statusComboBox;
 
     @FXML
     private Label priorityLabel;
@@ -59,6 +62,8 @@ public class IssueViewController {
 
     @FXML
     public void initialize() {
+        String shortcutSymbol = System.getProperty("os.name").toLowerCase().contains("mac") ? "⌘" : "Ctrl+";
+        Tooltip.install(backBtn, new Tooltip("Get Back (" + shortcutSymbol + "R)"));
         issueViewScene.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.getAccelerators().put(
@@ -67,6 +72,15 @@ public class IssueViewController {
                 );
             }
         });
+
+        statusComboBox.getItems().addAll(BugStatus.values());
+        statusComboBox.setOnAction((action) -> updateStatus());
+    }
+
+    private void updateStatus() {
+        issue.setStatus(statusComboBox.getValue());
+        statusLabel.setText("Status: " + issue.getStatus().getStatusName());
+        parent.showToast("Status changed");
     }
 
     @FXML
@@ -76,12 +90,12 @@ public class IssueViewController {
 
     @FXML
     void backBtnClicked(ActionEvent event) {
-        mainWindow.goBack();
+        parent.goBack();
     }
 
     @FXML
     void editIssueBtnClicked(ActionEvent event) {
-        mainWindow.setEditIssuePane(issue);
+        parent.setEditIssuePane(issue);
     }
 
     public void initializeData(Issue issue) {
@@ -98,15 +112,12 @@ public class IssueViewController {
         descriptionWebView.setMaxWidth(Double.MAX_VALUE);
         descriptionWebView.addEventFilter(KeyEvent.KEY_TYPED, Event::consume);
 
+        statusComboBox.setValue(issue.getStatus());
+
         this.issue = issue;
     }
 
-    @FXML
-    void markStatusBtnClicked(ActionEvent event) {
-
-    }
-
     public void setParent(MainAppWindowController mainWindow) {
-        this.mainWindow = mainWindow;
+        this.parent = mainWindow;
     }
 }

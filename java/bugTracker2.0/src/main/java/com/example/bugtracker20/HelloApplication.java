@@ -20,6 +20,7 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws IOException {
         List<User> users = new ArrayList<>();
         users.add(new User("Artur", "Twardzik", "at"));
+        users.get(0).addRole(UserRole.REVIEWER);
         users.add(new User("J", "Twardzik", "jt"));
 
         IssueManager manager = new IssueManager();

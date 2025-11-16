@@ -7,6 +7,7 @@ module com.example.bugtracker20 {
     requires java.desktop;
     requires org.kordamp.ikonli.materialdesign;
     requires javafx.graphics;
+    requires javafx.base;
 
     opens com.example.bugtracker20 to javafx.fxml;
     exports com.example.bugtracker20;

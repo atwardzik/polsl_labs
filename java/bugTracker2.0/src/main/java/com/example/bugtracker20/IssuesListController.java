@@ -13,7 +13,7 @@ public class IssuesListController {
     @FXML
     private ListView<Issue> issuesList;
 
-    MainAppWindowController parent;
+    private MainAppWindowController parent;
 
     private ChildControllerListener listener;
 
