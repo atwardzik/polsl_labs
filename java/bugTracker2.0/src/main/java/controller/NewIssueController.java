@@ -1,6 +1,5 @@
 package controller;
 
-import com.example.bugtracker20.ChildControllerListener;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

@@ -10,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import lombok.Setter;
 import model.BugStatus;
 import model.Issue;
 import model.User;
@@ -30,7 +31,13 @@ import java.util.Objects;
 public class AccountController {
     /**
      * Reference to the main window controller for navigation and callbacks.
+     * -- SETTER --
+     *  Sets the parent controller that manages the main application window.
+     *
+     * @param parent the main window controller to associate with this account view
+
      */
+    @Setter
     private MainAppWindowController parent;
 
     /**
@@ -225,15 +232,6 @@ public class AccountController {
         statusCol.setOnEditCommit(t -> {
             (t.getTableView().getItems().get(t.getTablePosition().getRow())).setStatus(BugStatus.valueOf(t.getNewValue()));
         });
-    }
-
-    /**
-     * Sets the parent controller that manages the main application window.
-     *
-     * @param parent the main window controller to associate with this account view
-     */
-    public void setParent(MainAppWindowController parent) {
-        this.parent = parent;
     }
 
     /**

@@ -1,6 +1,5 @@
 package controller;
 
-import com.example.bugtracker20.ChildControllerListener;
 import com.example.bugtracker20.HelloApplication;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;

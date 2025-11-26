@@ -64,7 +64,10 @@ public enum BugStatus {
     }
 
     /**
-     * Converts enum values to the string array for the purposes of ComboBox
+     * Converts enum values to the string array for the purposes of ComboBox.
+     *
+     * WARNING: THIS SHALL ABSOLUTELY NOT BE CONVERTED TO LIST, AS THE CELL FACTORY IN COMBOBOX
+     * REQUIRES AN ARRAY TYPE
      *
      * @return array of Strings representing enum names
      */

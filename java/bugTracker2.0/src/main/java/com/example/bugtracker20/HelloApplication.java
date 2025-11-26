@@ -14,7 +14,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Application runner
+ *
+ * @author Artur Twardzik
+ * @version 0.2
+ */
 public class HelloApplication extends Application {
+    /**
+     * Starts the application
+     * @param stage the stage
+     * @throws IOException
+     */
     @Override
     public void start(Stage stage) throws IOException {
         List<User> users = new ArrayList<>();
