@@ -129,7 +129,7 @@ public class NewIssueController {
                         () -> backBtnClicked(null)
                 );
 
-                assigneeComboBox.getItems().addAll(parent.getUsersList());
+                assigneeComboBox.getItems().addAll(parent.getUsers());
                 assigneeComboBox.setCellFactory(listView -> new ListCell<>() {
                     @Override
                     protected void updateItem(User user, boolean empty) {
@@ -193,7 +193,7 @@ public class NewIssueController {
             return;
         }
 
-        User user = parent.getReporter();
+        User user = parent.getUser();
         if (user == null) {
             parent.showToast("You are not logged in!");
             return;

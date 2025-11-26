@@ -148,15 +148,7 @@ public class IssueManager {
      * @return a list of issues created by specified author
      */
     public List<Issue> filterByAuthor(User user) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            if (issue.getReporter().equals(user)) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getReporter().equals(user)).toList();
     }
 
     /**
@@ -166,15 +158,7 @@ public class IssueManager {
      * @return a list of issues created after specified date
      */
     public List<Issue> filterByDateAfter(LocalDateTime start) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            if (issue.getCreatedAt().isAfter(start)) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getCreatedAt().isAfter(start)).toList();
     }
 
     /**
@@ -184,15 +168,7 @@ public class IssueManager {
      * @return a list of issues created before specified date
      */
     public List<Issue> filterByDateBefore(LocalDateTime end) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            if (issue.getCreatedAt().isBefore(end)) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getCreatedAt().isBefore(end)).toList();
     }
 
     /**
@@ -202,15 +178,7 @@ public class IssueManager {
      * @return a list of issues starting with specified if fragment
      */
     public List<Issue> filterByIdFragment(String issueID) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            if (issue.getId().toString().startsWith(issueID)) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getId().toString().startsWith(issueID)).toList();
     }
 
     /**
@@ -220,15 +188,7 @@ public class IssueManager {
      * @return a list of issues with given priority
      */
     public List<Issue> filterByPriority(Priority priority) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            if (issue.getPriority() == priority) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getPriority() == priority).toList();
     }
 
     /**
@@ -238,15 +198,7 @@ public class IssueManager {
      * @return a list of issues with given status
      */
     public List<Issue> filterByStatus(BugStatus status) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            if (issue.getStatus() == status) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getStatus() == status).toList();
     }
 
     /**
@@ -262,13 +214,7 @@ public class IssueManager {
 
         String lowerTitle = title.toLowerCase();
 
-        List<Issue> matchingIssues = new ArrayList<>();
-        for (Issue issue : issues) {
-            if (issue.getTitle() != null && issue.getTitle().toLowerCase().contains(lowerTitle)) {
-                matchingIssues.add(issue);
-            }
-        }
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getTitle().toLowerCase().contains(lowerTitle)).toList();
     }
 
     /**

@@ -18,7 +18,7 @@ import model.Issue;
  * shortcuts), and delegating navigation to the main application window controller.
  *
  * @author Artur Twardzik
- * @version 0.2
+ * @version 0.3
  */
 public class IssuesListController {
     /**
@@ -49,7 +49,8 @@ public class IssuesListController {
     /**
      * Callback used to report exceptions or errors back to the parent controller.
      */
-    private ChildControllerListener listener;
+    @Setter
+    private ChildControllerListener exceptionListener;
 
     /**
      * Initializes the issues list view by configuring its cell factory,
@@ -66,8 +67,8 @@ public class IssuesListController {
                     try {
                         parent.setIssuePane(selectedIssue);
                     } catch (Exception e) {
-                        if (this.listener != null) {
-                            this.listener.onError(e);
+                        if (this.exceptionListener != null) {
+                            this.exceptionListener.onError(e);
                         }
                     }
                 }
@@ -97,16 +98,6 @@ public class IssuesListController {
                 issuesList.requestFocus();
             }
         });
-    }
-
-    /**
-     * Registers an exception listener to receive error notifications
-     * triggered by interactions inside the issues list view.
-     *
-     * @param eventListerner the listener to notify on exceptions
-     */
-    public void setExceptionListerner(ChildControllerListener eventListerner) {
-        this.listener = eventListerner;
     }
 
     /**

@@ -13,6 +13,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
+import lombok.Setter;
 import model.BugStatus;
 import model.Issue;
 
@@ -30,7 +31,14 @@ import java.time.format.DateTimeFormatter;
 public class IssueViewController {
     /**
      * Reference to the main window controller for navigation and shared data access.
+     * -- SETTER --
+     *  Sets the parent main window controller, which provides navigation
+     *  methods and access to shared application data.
+     *
+     * @param mainWindow the main application window controller
+
      */
+    @Setter
     MainAppWindowController parent;
 
     /**
@@ -206,13 +214,4 @@ public class IssueViewController {
         this.issue = issue;
     }
 
-    /**
-     * Sets the parent main window controller, which provides navigation
-     * methods and access to shared application data.
-     *
-     * @param mainWindow the main application window controller
-     */
-    public void setParent(MainAppWindowController mainWindow) {
-        this.parent = mainWindow;
-    }
 }

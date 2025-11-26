@@ -43,10 +43,6 @@ import java.util.Stack;
 public class MainAppWindowController implements ChildControllerListener {
     /**
      * Manager responsible for storing, updating, and retrieving issues.
-     * -- GETTER --
-     *
-     * @return the IssueManager used by this controller
-
      */
     @Getter
     private IssueManager manager;
@@ -54,11 +50,13 @@ public class MainAppWindowController implements ChildControllerListener {
     /**
      * List of all users available in the system.
      */
+    @Getter
     private List<User> users;
 
     /**
      * The currently active or logged-in user.
      */
+    @Getter
     private User user;
 
     /**
@@ -408,7 +406,7 @@ public class MainAppWindowController implements ChildControllerListener {
             issuesListController = loader.getController();
 
             issuesListController.setParent(this);
-            issuesListController.setExceptionListerner(this);
+            issuesListController.setExceptionListener(this);
             issuesListController.initializeData();
 
             setNewRightPane(issuesListContents);
@@ -552,20 +550,6 @@ public class MainAppWindowController implements ChildControllerListener {
      */
     public List<Issue> getIssuesList() {
         return manager.getAllIssues();
-    }
-
-    /**
-     * @return the currently active user (reporter)
-     */
-    public User getReporter() {
-        return user;
-    }
-
-    /**
-     * @return the list of all users
-     */
-    public List<User> getUsersList() {
-        return users;
     }
 
     /**

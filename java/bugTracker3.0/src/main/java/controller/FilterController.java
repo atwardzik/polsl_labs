@@ -139,7 +139,7 @@ public class FilterController {
                         }
                 );
 
-                authorComboBox.getItems().addAll(parent.getUsersList());
+                authorComboBox.getItems().addAll(parent.getUsers());
                 authorComboBox.setCellFactory(listView -> new ListCell<>() {
                     @Override
                     protected void updateItem(User user, boolean empty) {
