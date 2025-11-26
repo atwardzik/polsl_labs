@@ -10,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.MouseEvent;
 import lombok.Setter;
 import model.BugStatus;
 import model.Issue;
@@ -32,10 +33,9 @@ public class AccountController {
     /**
      * Reference to the main window controller for navigation and callbacks.
      * -- SETTER --
-     *  Sets the parent controller that manages the main application window.
+     * Sets the parent controller that manages the main application window.
      *
      * @param parent the main window controller to associate with this account view
-
      */
     @Setter
     private MainAppWindowController parent;
@@ -134,6 +134,22 @@ public class AccountController {
         );
 
         tableView.setEditable(true);
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        tableView.setRowFactory(tv -> {
+            TableRow<Issue> row = new TableRow<>();
+
+            row.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+                if (!row.isEmpty()) {
+                    int index = row.getIndex();
+                    if (tableView.getSelectionModel().getSelectedIndices().contains(index)) {
+                        event.consume();
+                        tableView.edit(index, statusCol);
+                    }
+                }
+            });
+
+            return row;
+        });
         statusCol.setEditable(true);
 
         initializeIssueTitleCol();
@@ -230,7 +246,19 @@ public class AccountController {
                 new SimpleStringProperty(cellData.getValue().getStatus().name()));
         statusCol.setCellFactory(ComboBoxTableCell.<Issue, String>forTableColumn(BugStatus.toArrayOfStrings()));
         statusCol.setOnEditCommit(t -> {
-            (t.getTableView().getItems().get(t.getTablePosition().getRow())).setStatus(BugStatus.valueOf(t.getNewValue()));
+            TableView<Issue> table = t.getTableView();
+            String newStatus = t.getNewValue();
+
+            ObservableList<Issue> selected = table.getSelectionModel().getSelectedItems();
+
+            if (selected.size() > 1) {
+                selected.forEach(issue -> issue.setStatus(BugStatus.valueOf(newStatus)));
+                table.getSelectionModel().clearAndSelect(0);
+                table.refresh();
+            } else {
+                Issue edited = t.getRowValue();
+                edited.setStatus(BugStatus.valueOf(newStatus));
+            }
         });
     }
 

@@ -128,17 +128,7 @@ public class IssueManager {
      * @return a list of issues that contain the specified tag
      */
     public List<Issue> filterByTag(String tag) {
-        List<Issue> matchingIssues = new ArrayList<>();
-
-        for (Issue issue : issues) {
-            Set<String> issueTags = issue.getTags();
-
-            if (issueTags.contains(tag)) {
-                matchingIssues.add(issue);
-            }
-        }
-
-        return matchingIssues;
+        return issues.stream().filter(issue -> issue.getTags().contains(tag)).toList();
     }
 
     /**
