@@ -1,12 +1,11 @@
 html, body {
-    height: 100%;
+    min-height: 100%;
     margin: 0;
     font-family: "Inter", sans-serif;
 }
 
 .container {
     width: 100%;
-    height: 100%;
     display: flex;
 }
 
@@ -41,9 +40,9 @@ html, body {
 #contents {
     flex: 1;
     margin-left: 65px;
-    padding: 20px;
     max-width: 100%;
     box-sizing: border-box;
+    padding: 20px 20px 40px;
 }
 
 #contents a {
@@ -92,10 +91,7 @@ html, body {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    margin-left: 8px;
-    margin-right: 8px;
-    margin-top: auto;
-    margin-bottom: auto;
+    margin: auto 8px;
     cursor: help;
     border: 1px solid black;
     flex-shrink: 0;
@@ -189,4 +185,57 @@ html, body {
     box-sizing: border-box;
 
     text-align: center;
+}
+
+.issue-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.issue-edit input,
+.issue-edit select,
+.issue-edit textarea {
+    border-radius: 5px;
+    border: 2px solid black;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.issue-edit-title {
+    width: 100%;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.issue-edit-meta {
+    display: flex;
+    gap: 24px;
+}
+
+.issue-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+}
+
+.issue-edit-field label {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.issue-edit-description {
+    border-radius: 5px;
+    border: 2px solid black;
+    min-height: 220px;
+    padding: 20px;
+}
+
+.issue-save-btn {
+    width: 100px;
+    align-self: flex-start;
 }

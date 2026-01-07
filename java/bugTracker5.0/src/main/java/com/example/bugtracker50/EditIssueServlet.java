@@ -6,12 +6,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.BugStatus;
-import model.Issue;
-import model.IssueListRecord;
-import model.IssueManager;
+import model.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,28 +24,51 @@ public class EditIssueServlet extends HttpServlet {
         IssueManager manager = (IssueManager) context.getAttribute("IssueManager");
 
         String id = request.getParameter("id");
-        String statusParam = request.getParameter("status");
-        BugStatus status;
+        if (id == null || id.isBlank()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        Optional<Issue> optIssue = manager.findIssueByIdFragment(id);
+        if (optIssue.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        Issue issue = optIssue.get();
+
+        /* -------- OPTIONAL FIELDS -------- */
+
         try {
-            status = BugStatus.valueOf(statusParam);
-        } catch (IllegalArgumentException _) {
+            String title = request.getParameter("title");
+            if (title != null) {
+                issue.setTitle(title.trim());
+            }
+
+            String statusParam = request.getParameter("status");
+            if (statusParam != null) {
+                issue.setStatus(BugStatus.valueOf(statusParam));
+            }
+
+            String priorityParam = request.getParameter("priority");
+            if (priorityParam != null) {
+                issue.setPriority(Priority.valueOf(priorityParam));
+            }
+
+            String dueDateParam = request.getParameter("dueDate");
+            if (dueDateParam != null && !dueDateParam.isBlank()) {
+                issue.setDueDate(LocalDate.parse(dueDateParam).atStartOfDay());
+            }
+
+            String description = request.getParameter("description");
+            if (description != null) {
+                issue.setDescription(description); //sanitize....?
+            }
+        } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
         }
 
-        if (id == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        Optional<Issue> issue = manager.findIssueByIdFragment(id);
-        if (issue.isPresent()) {
-            issue.get().setStatus(status);
-
-            response.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
     public void destroy() {

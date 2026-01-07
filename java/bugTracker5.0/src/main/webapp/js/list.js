@@ -78,10 +78,10 @@ function showIssueDetails(issueId) {
             editBar.className = "issue-edit-bar";
 
             const editLink = document.createElement("a");
-            editLink.href = `edit-issue-servlet?id=${issueId}`;
+            editLink.href = `tracker.html?view=edit&id=${issueId}`;
             editLink.textContent = "Edit";
             const assignLink = document.createElement("a");
-            assignLink.href = `edit-issue-servlet?id=${issueId}`;
+            assignLink.href = ``;
             assignLink.textContent = "Assign";
 
             const select = document.createElement("select");
@@ -121,6 +121,119 @@ function showIssueDetails(issueId) {
         .catch(err => console.error(err));
 }
 
+function showEdit(issueId) {
+    fetch("issue-details?id=" + issueId)
+        .then(response => response.json())
+        .then(issueData => {
+            const container = document.getElementById("contents");
+            container.innerHTML = "";
+
+            const form = document.createElement("div");
+            form.className = "issue-edit";
+
+            const title = document.createElement("input");
+            title.type = "text";
+            title.value = issueData.title;
+            title.className = "issue-edit-title";
+
+            const metaRow = document.createElement("div");
+            metaRow.className = "issue-edit-meta";
+
+            const createLabeledField = (labelText, field) => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "issue-edit-field";
+
+                const label = document.createElement("label");
+                label.textContent = labelText;
+
+                wrapper.append(label, field);
+                return wrapper;
+            };
+
+            const status = document.createElement("select");
+            status.className = "issue-edit-status";
+            ["OPEN", "CLOSED", "REOPENED", "IN_PROGRESS"].forEach(s => {
+                const o = document.createElement("option");
+                o.value = s;
+                o.textContent = s.replace("_", " ");
+                if (s === issueData.status) o.selected = true;
+                status.appendChild(o);
+            });
+
+            const priority = document.createElement("select");
+            priority.className = "issue-edit-priority";
+            ["LOW", "MEDIUM", "HIGH", "CRITICAL"].forEach(p => {
+                const o = document.createElement("option");
+                o.value = p;
+                o.textContent = p;
+                if (p === issueData.priority) o.selected = true;
+                priority.appendChild(o);
+            });
+
+            const dueDate = document.createElement("input");
+            dueDate.type = "date";
+            dueDate.className = "issue-edit-dueDate";
+            dueDate.value = issueData.dueDate;
+
+            metaRow.append(
+                createLabeledField("Status", status),
+                createLabeledField("Priority", priority),
+                createLabeledField("Due date", dueDate)
+            );
+
+            const description = document.createElement("div");
+            description.className = "issue-edit-description";
+            description.contentEditable = "true";
+            description.innerHTML = issueData.description || "";
+
+            const saveBtn = document.createElement("button");
+            saveBtn.textContent = "Save";
+            saveBtn.className = "issue-save-btn";
+            saveBtn.onclick = () => saveIssue(issueId);
+
+            form.append(title, metaRow, description, saveBtn);
+            container.appendChild(form);
+        });
+}
+
+function saveIssue(issueId) {
+    const title = document.querySelector(".issue-edit-title").value;
+    const status = document.querySelector(".issue-edit-status").value;
+    const priority = document.querySelector(".issue-edit-priority").value;
+    const dueDate = document.querySelector(".issue-edit-dueDate").value;
+    const description = document.querySelector(".issue-edit-description").innerHTML;
+
+    fetch("edit-issue-servlet", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            id: issueId,
+            title: title,
+            status: status,
+            priority: priority,
+            dueDate: dueDate,
+            description: description
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Save failed");
+            }
+            return response.text();
+        })
+        .then(() => {
+            alert("Issue saved successfully");
+            // optional refresh:
+            // location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Failed to save issue");
+        });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view");
@@ -130,6 +243,8 @@ window.addEventListener("DOMContentLoaded", () => {
         showIssueDetails(id);
     } else if (view === "filter") {
         showFilter();
+    } else if (view === "edit") {
+        showEdit(id);
     } else {
         showList();
     }
