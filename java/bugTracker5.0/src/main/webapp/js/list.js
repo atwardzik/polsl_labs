@@ -59,6 +59,7 @@ function showIssueDetails(issueId) {
                     <p><strong>ID:</strong> ${issueId}</p>
                     <p><strong>Author:</strong> ${issueData.author}</p>
                     <p><strong>Status:</strong> ${issueData.status.replace("_", " ")}</p>
+                    <p><strong>Priority:</strong> ${issueData.priority}</p>
                     <p><strong>Created:</strong> ${issueData.dateCreated}</p>
                     <p><strong>Due:</strong> ${issueData.dueDate}</p>
                     <hr>

@@ -319,6 +319,7 @@ public class Issue {
         }
 
         return new IssueFullRecord(status,
+                priority,
                 "#" + id.toString(),
                 title,
                 reporter.getUsername(),
