@@ -49,62 +49,47 @@ function showList() {
 }
 
 function showIssueDetails(issueId) {
-    fetch("issue-details?id=" + issueId)
+    fetch(`issue-details?id=${issueId}`)
         .then(response => response.json())
         .then(issueData => {
             const container = document.getElementById("contents");
-            container.innerHTML = "";
-
-            const meta = document.createElement("div");
-            meta.className = "issue-meta";
-            meta.innerHTML = `
-                <h1>${issueData.title}</h1>
-                <p><strong>ID:</strong> ${issueId}</p>
-                <p><strong>Author:</strong> ${issueData.author}</p>
-                <p><strong>Status:</strong> ${issueData.status.replace("_", " ")}</p>
-                <p><strong>Created:</strong> ${issueData.dateCreated}</p>
-                <p><strong>Due:</strong> ${issueData.dueDate}</p>
-                <hr>
+            container.innerHTML = `
+                <div class="issue-meta">
+                    <h1>${issueData.title}</h1>
+                    <p><strong>ID:</strong> ${issueId}</p>
+                    <p><strong>Author:</strong> ${issueData.author}</p>
+                    <p><strong>Status:</strong> ${issueData.status.replace("_", " ")}</p>
+                    <p><strong>Created:</strong> ${issueData.dateCreated}</p>
+                    <p><strong>Due:</strong> ${issueData.dueDate}</p>
+                    <hr>
+                </div>
+                <div class="issue-description">
+                    ${issueData.description}
+                </div>
+                <div class="issue-edit-bar">
+                    <a href="tracker.html?view=edit&id=${issueId}">Edit</a>
+                    <a href="">Assign</a>
+                    <select id="status-select">
+                        <option value="OPEN">Open</option>
+                        <option value="CLOSED">Closed</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="REOPENED">Reopened</option>
+                    </select>
+                </div>
             `;
-            container.appendChild(meta);
 
-            const desc = document.createElement("div");
-            desc.className = "issue-description";
-            desc.innerHTML = issueData.description;
-            container.appendChild(desc);
-
-
-            const editBar = document.createElement("div");
-            editBar.className = "issue-edit-bar";
-
-            const editLink = document.createElement("a");
-            editLink.href = `tracker.html?view=edit&id=${issueId}`;
-            editLink.textContent = "Edit";
-            const assignLink = document.createElement("a");
-            assignLink.href = ``;
-            assignLink.textContent = "Assign";
-
-            const select = document.createElement("select");
-            ["OPEN", "CLOSED", "REOPENED", "IN_PROGRESS"].forEach(status => {
-                const option = document.createElement("option");
-                option.value = status;
-                option.textContent = status.replace("_", " ");
-                if (status === issueData.status) option.selected = true;
-                select.appendChild(option);
-            });
+            const select = container.querySelector("#status-select");
+            select.value = issueData.status;
 
             select.addEventListener("change", () => {
                 const newStatus = select.value;
                 fetch("edit-issue-servlet", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
+                    headers: {"Content-Type": "application/x-www-form-urlencoded"},
                     body: `id=${encodeURIComponent(issueId)}&status=${encodeURIComponent(newStatus)}`
                 })
                     .then(response => {
                         if (!response.ok) throw new Error("Update failed");
-
                         location.reload();
                     })
                     .catch(err => {
@@ -112,88 +97,64 @@ function showIssueDetails(issueId) {
                         console.error(err);
                     });
             });
-
-            editBar.appendChild(editLink);
-            editBar.appendChild(assignLink);
-            editBar.appendChild(select);
-            container.appendChild(editBar);
         })
         .catch(err => console.error(err));
 }
 
 function showEdit(issueId) {
-    fetch("issue-details?id=" + issueId)
+    fetch(`issue-details?id=${issueId}`)
         .then(response => response.json())
         .then(issueData => {
             const container = document.getElementById("contents");
-            container.innerHTML = "";
 
-            const form = document.createElement("div");
-            form.className = "issue-edit";
+            container.innerHTML = `
+                <div class="issue-edit">
+                    <input type="text" class="issue-edit-title" value="${issueData.title}">
 
-            const title = document.createElement("input");
-            title.type = "text";
-            title.value = issueData.title;
-            title.className = "issue-edit-title";
+                    <div class="issue-edit-meta">
+                        <div class="issue-edit-field">
+                            <label>Status</label>
+                            <select class="issue-edit-status">
+                                <option value="OPEN">Open</option>
+                                <option value="CLOSED">Closed</option>
+                                <option value="REOPENED">Reopened</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                            </select>
+                        </div>
 
-            const metaRow = document.createElement("div");
-            metaRow.className = "issue-edit-meta";
+                        <div class="issue-edit-field">
+                            <label>Priority</label>
+                            <select class="issue-edit-priority">
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="CRITICAL">Critical</option>
+                            </select>
+                        </div>
 
-            const createLabeledField = (labelText, field) => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "issue-edit-field";
+                        <div class="issue-edit-field">
+                            <label>Due date</label>
+                            <input type="date" class="issue-edit-dueDate" value="${issueData.dueDate}">
+                        </div>
+                    </div>
 
-                const label = document.createElement("label");
-                label.textContent = labelText;
+                    <div class="issue-edit-description" contenteditable="true">
+                        ${issueData.description || ""}
+                    </div>
 
-                wrapper.append(label, field);
-                return wrapper;
-            };
+                    <button class="issue-save-btn">Save</button>
+                </div>
+            `;
 
-            const status = document.createElement("select");
-            status.className = "issue-edit-status";
-            ["OPEN", "CLOSED", "REOPENED", "IN_PROGRESS"].forEach(s => {
-                const o = document.createElement("option");
-                o.value = s;
-                o.textContent = s.replace("_", " ");
-                if (s === issueData.status) o.selected = true;
-                status.appendChild(o);
-            });
+            const statusSelect = container.querySelector(".issue-edit-status");
+            statusSelect.value = issueData.status;
 
-            const priority = document.createElement("select");
-            priority.className = "issue-edit-priority";
-            ["LOW", "MEDIUM", "HIGH", "CRITICAL"].forEach(p => {
-                const o = document.createElement("option");
-                o.value = p;
-                o.textContent = p;
-                if (p === issueData.priority) o.selected = true;
-                priority.appendChild(o);
-            });
+            const prioritySelect = container.querySelector(".issue-edit-priority");
+            prioritySelect.value = issueData.priority;
 
-            const dueDate = document.createElement("input");
-            dueDate.type = "date";
-            dueDate.className = "issue-edit-dueDate";
-            dueDate.value = issueData.dueDate;
-
-            metaRow.append(
-                createLabeledField("Status", status),
-                createLabeledField("Priority", priority),
-                createLabeledField("Due date", dueDate)
-            );
-
-            const description = document.createElement("div");
-            description.className = "issue-edit-description";
-            description.contentEditable = "true";
-            description.innerHTML = issueData.description || "";
-
-            const saveBtn = document.createElement("button");
-            saveBtn.textContent = "Save";
-            saveBtn.className = "issue-save-btn";
-            saveBtn.onclick = () => saveIssue(issueId);
-
-            form.append(title, metaRow, description, saveBtn);
-            container.appendChild(form);
-        });
+            container.querySelector(".issue-save-btn").onclick = () => saveIssue(issueId);
+        })
+        .catch(err => console.error(err));
 }
 
 function saveIssue(issueId) {
@@ -225,8 +186,7 @@ function saveIssue(issueId) {
         })
         .then(() => {
             alert("Issue saved successfully");
-            // optional refresh:
-            // location.reload();
+            showIssueDetails(issueId);
         })
         .catch(err => {
             console.error(err);
