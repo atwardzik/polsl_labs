@@ -1,6 +1,5 @@
 package com.example.bugtracker50;
 
-import com.google.gson.Gson;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,7 +9,6 @@ import model.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @WebServlet("/edit-issue-servlet")

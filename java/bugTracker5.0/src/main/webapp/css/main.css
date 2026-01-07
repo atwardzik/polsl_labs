@@ -235,6 +235,13 @@ html, body {
     padding: 20px;
 }
 
+.issue-edit-description[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+    pointer-events: none;
+    display: block;
+}
+
 .issue-save-btn {
     width: 100px;
     align-self: flex-start;

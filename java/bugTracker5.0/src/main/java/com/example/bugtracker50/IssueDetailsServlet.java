@@ -6,7 +6,6 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Issue;
-import model.IssueListRecord;
 import model.IssueManager;
 
 import java.io.IOException;

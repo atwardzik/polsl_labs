@@ -195,6 +195,87 @@ function saveIssue(issueId) {
         });
 }
 
+function showIssueCreator() {
+    const container = document.getElementById("contents");
+
+    container.innerHTML = `
+                <div class="issue-edit">
+                    <input type="text" class="issue-edit-title" placeholder="Title">
+
+                    <div class="issue-edit-meta">
+                        <div class="issue-edit-field">
+                            <label>Status</label>
+                            <select class="issue-edit-status">
+                                <option value="OPEN">Open</option>
+                                <option value="CLOSED">Closed</option>
+                                <option value="REOPENED">Reopened</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                            </select>
+                        </div>
+
+                        <div class="issue-edit-field">
+                            <label>Priority</label>
+                            <select class="issue-edit-priority">
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="CRITICAL">Critical</option>
+                            </select>
+                        </div>
+
+                        <div class="issue-edit-field">
+                            <label>Due date</label>
+                            <input type="date" class="issue-edit-dueDate">
+                        </div>
+                    </div>
+
+                    <div class="issue-edit-description" contenteditable="true" data-placeholder="Enter the issue description here..."></div>
+
+                    <button class="issue-save-btn">Save</button>
+                </div>
+            `;
+
+    container.querySelector(".issue-save-btn").onclick = () => createIssue();
+}
+
+function createIssue() {
+    const title = document.querySelector(".issue-edit-title").value;
+    const status = document.querySelector(".issue-edit-status").value;
+    const priority = document.querySelector(".issue-edit-priority").value;
+    const dueDate = document.querySelector(".issue-edit-dueDate").value;
+    const description = document.querySelector(".issue-edit-description").innerHTML;
+
+    fetch("new-issue-servlet", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            title: title,
+            status: status,
+            priority: priority,
+            dueDate: dueDate,
+            description: description
+        })
+    })
+        .then(async response => {
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw { status: response.status, message: errorText };
+            }
+            return response.text();
+        })
+        .then(() => {
+            alert("Issue created successfully");
+            showList();
+        })
+        .catch(err => {
+            console.error("Error status:", err.status);
+            console.error("Error message:", err.message);
+            alert(`Failed to save issue: ${err.message} (code ${err.status})`);
+        });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view");
@@ -206,6 +287,8 @@ window.addEventListener("DOMContentLoaded", () => {
         showFilter();
     } else if (view === "edit") {
         showEdit(id);
+    } else if (view === "new") {
+        showIssueCreator();
     } else {
         showList();
     }
