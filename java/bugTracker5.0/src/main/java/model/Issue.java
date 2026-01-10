@@ -323,6 +323,7 @@ public class Issue {
                 "#" + id.toString(),
                 title,
                 reporter.getUsername(),
+                reporter.getName() + " " + reporter.getSurname(),
                 createdAt.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                 due,
                 description

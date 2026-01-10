@@ -1,0 +1,125 @@
+.issues-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
+    padding: 10px 14px;
+    margin-top: 15px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    flex-shrink: 1; /* allow shrinking */
+    min-height: 40px;
+    overflow: hidden;
+    box-sizing: border-box;
+    container-type: inline-size;
+}
+
+.issues-card:hover {
+    box-shadow: 0 6px 14px rgba(82, 150, 255, 0.18);
+    cursor: pointer;
+}
+
+.status-badge {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: auto 8px;
+    cursor: help;
+    border: 1px solid black;
+    flex-shrink: 0;
+}
+
+.badge-open {
+    background-color: #2ecc71;
+}
+
+.badge-in-progress {
+    background-color: #ffd22f;
+}
+
+.badge-closed {
+    background-color: #e74c3c;
+}
+
+.badge-reopened {
+    background-color: #ff9900;
+}
+
+.badge-default {
+    background-color: gray;
+}
+
+.issue-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex: 1 1 auto;
+    min-width: 50vw;
+    margin-right: 5vw;
+}
+
+.issue-list-id {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: #57606a;
+    min-width: 70px;
+}
+
+.issue-list-title {
+    color: #24292f;
+    font-weight: 400;
+    flex: 1 1 auto;
+    min-width: 40vw;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-meta-info {
+    display: flex;
+    gap: 12px;
+
+    flex: 0 0 auto;
+    white-space: nowrap;
+    margin-left: 5vw;
+}
+
+.issue-list-author,
+.issue-list-dateCreated,
+.issue-list-dueDate {
+    font-size: 13px;
+    color: #6e7781;
+    margin-left: 12px;
+    white-space: nowrap;
+    min-width: 5vw;
+}
+
+@media (max-width: 800px) {
+    .issue-list-dateCreated {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .issue-list-dueDate {
+        display: none;
+    }
+}
+
+@media (max-width: 550px) {
+    .list-meta-info {
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .list-meta-info {
+        display: none;
+    }
+}

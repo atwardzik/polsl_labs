@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <title>Issues List</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -11,16 +12,24 @@
           rel="stylesheet">
     <script src="https://kit.fontawesome.com/148412e972.js" crossorigin="anonymous"></script>
 
+    <script src="js/main.js?v=<%= System.currentTimeMillis() %>"></script>
     <script src="js/list.js?v=<%= System.currentTimeMillis() %>"></script>
+    <script src="js/details.js?v=<%= System.currentTimeMillis() %>"></script>
+    <script src="js/edit.js?v=<%= System.currentTimeMillis() %>"></script>
+    <script src="js/new.js?v=<%= System.currentTimeMillis() %>"></script>
     <link rel="stylesheet" href="css/main.css"/>
+    <link rel="stylesheet" href="css/list.css"/>
+    <link rel="stylesheet" href="css/details.css"/>
+    <link rel="stylesheet" href="css/edit.css"/>
+    <link rel="stylesheet" href="css/new.css"/>
 </head>
 <body>
 <div class="container">
     <div class="nav-menu">
-        <button class="navBtn" onclick="showUser();"><i class="fa-solid fa-user"></i></button>
-        <button class="navBtn" onclick="location.href='tracker.html'"><i class="fa-solid fa-list"></i></button>
-        <button class="navBtn" onclick="location.href='tracker.html?view=filter'"><i class="fa-solid fa-magnifying-glass"></i></button>
-        <button class="navBtn" onclick="location.href='tracker.html?view=new'"><i class="fa-solid fa-pencil"></i></button>
+        <button title="User Info" class="navBtn" onclick="showUser();"><i class="fa-solid fa-user"></i></button>
+        <button title="Issues List" class="navBtn" onclick="location.href='tracker.html'"><i class="fa-solid fa-list"></i></button>
+        <button title="Filter Issues" class="navBtn" onclick="location.href='tracker.html?view=filter'"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button title="New Issue" class="navBtn" onclick="location.href='tracker.html?view=new'"><i class="fa-solid fa-pencil"></i></button>
     </div>
     <div id="contents"></div>
 </div>

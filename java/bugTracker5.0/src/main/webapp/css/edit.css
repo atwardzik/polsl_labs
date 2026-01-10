@@ -1,0 +1,84 @@
+.issue-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.issue-edit-title {
+    width: 100%;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.issue-edit-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.issue-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+    position: relative;
+}
+
+.issue-edit-field label {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.issue-edit-description {
+    border-radius: 5px;
+    border: 2px solid black;
+    min-height: 220px;
+    padding: 20px;
+}
+
+.issue-edit-description[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+    pointer-events: none;
+    display: block;
+}
+
+.issue-edit-description:focus {
+    box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
+    border: 2px solid rgba(0, 0, 0, 0.80);
+    outline: none;
+}
+
+.issue-edit-description:hover {
+    border: 2px solid rgba(0, 0, 0, 0.80);
+    background-color: #fbfbfb;
+    box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
+    cursor: pointer;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    display: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    background: white;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    z-index: 1000;
+}
+
+.search-results li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.search-results li:hover {
+    background-color: #fbfbfb;
+}

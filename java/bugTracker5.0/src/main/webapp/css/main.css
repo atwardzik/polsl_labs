@@ -5,7 +5,6 @@ html, body {
 }
 
 .container {
-    width: 100%;
     display: flex;
 }
 
@@ -14,15 +13,11 @@ html, body {
     background-color: #ffffff;
     padding: 20px;
     box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
 
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
-    z-index: 1000;
 }
 
 .navBtn {
@@ -34,15 +29,18 @@ html, body {
     outline: none;
     cursor: pointer;
     font-size: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 45px;
+}
+
+.navBtn:hover {
+    color: rgb(82, 150, 255);
 }
 
 #contents {
     flex: 1;
-    margin-left: 65px;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 20px 20px 40px;
+    width: 100%;
+    /*box-sizing: border-box;*/
+    padding: 20px 20px 40px 85px;
 }
 
 #contents a {
@@ -62,121 +60,14 @@ html, body {
     color: inherit;
 }
 
-.issues-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%; /* force card to fit container */
-    max-width: 100%; /* prevent horizontal overflow */
-    font-size: 16px;
-    padding: 10px 14px;
-    margin-top: 15px;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
-    flex-shrink: 1; /* allow shrinking */
-    min-height: 40px;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.issues-card:hover {
-    box-shadow: 0 6px 14px rgba(82, 150, 255, 0.18);
-    cursor: pointer;
-}
-
-
-.status-badge {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin: auto 8px;
-    cursor: help;
-    border: 1px solid black;
-    flex-shrink: 0;
-}
-
-.badge-open {
-    background-color: #2ecc71;
-}
-
-.badge-in-progress {
-    background-color: #ffd22f;
-}
-
-.badge-closed {
-    background-color: #e74c3c;
-}
-
-.badge-reopened {
-    background-color: #ff9900;
-}
-
-.badge-default {
-    background-color: gray;
-}
-
-.issue-list-id {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 13px;
-    color: #57606a;
-    min-width: 90px;
-    flex-shrink: 0;
-}
-
-.issue-list-title {
-    color: #24292f;
-    font-weight: 400;
-    flex: 1 1 auto; /* flexible: grows and shrinks */
-    min-width: 0; /* allow shrinking below content width */
-    overflow: hidden; /* hide overflowing text */
-    text-overflow: ellipsis; /* add "..." */
-    white-space: nowrap; /* stay on one line */
-    margin-right: 16px;
-}
-
-.list-meta-info {
-    display: flex;
-    gap: 12px;
-    margin-left: auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex-shrink: 1;
-}
-
-.issue-list-author,
-.issue-list-dateCreated,
-.issue-list-dueDate {
-    font-size: 13px;
-    color: #6e7781;
-    margin-left: 12px;
-    white-space: nowrap;
-    min-width: 70px;
-}
-
-@media (max-width: 500px) {
-    .meta-info {
-        display: none;
-    }
-}
-
-.issue-edit-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 10px;
-}
-
-.issue-edit-bar a,
-.issue-edit-bar select {
-    height: 36px;
+.modifier {
+    height: 40px;
     min-width: 80px;
+    max-width: 10vw;
     border-radius: 5px;
     border: 2px solid black;
     padding: 0 12px;
-    margin-left: 20px;
+    background-color: transparent;
 
     display: flex;
     align-items: center;
@@ -185,64 +76,48 @@ html, body {
     box-sizing: border-box;
 
     text-align: center;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.30);
 }
 
-.issue-edit {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+.modifier:hover {
+    border: 2px solid rgba(0, 0, 0, 0.80);
+    background-color: #fbfbfb;
+    box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
+    cursor: pointer;
 }
 
-.issue-edit input,
-.issue-edit select,
-.issue-edit textarea {
+input,
+select,
+textarea {
+    background-color: transparent;
     border-radius: 5px;
     border: 2px solid black;
-    padding: 8px 12px;
+    padding: 6px 12px;
     box-sizing: border-box;
-    font-size: 14px;
-}
-
-.issue-edit-title {
-    width: 100%;
-    height: 40px;
     font-size: 16px;
-    font-weight: 600;
+    outline: none;
+    height: 40px;
+
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.30);
 }
 
-.issue-edit-meta {
-    display: flex;
-    gap: 24px;
+select {
+    text-align: center;
 }
 
-.issue-edit-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 160px;
+input:hover,
+select:hover,
+textarea:hover {
+    border: 2px solid rgba(0, 0, 0, 0.80);
+    background-color: #fbfbfb;
+    box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
+    cursor: pointer;
 }
 
-.issue-edit-field label {
-    font-size: 12px;
-    font-weight: 600;
-    opacity: 0.8;
-}
-
-.issue-edit-description {
-    border-radius: 5px;
-    border: 2px solid black;
-    min-height: 220px;
-    padding: 20px;
-}
-
-.issue-edit-description[contenteditable]:empty::before {
-    content: attr(data-placeholder);
-    color: #999;
-    pointer-events: none;
-    display: block;
-}
-
-.issue-save-btn {
-    width: 100px;
-    align-self: flex-start;
+input:focus,
+select:focus,
+textarea:focus {
+    border: 2px solid rgba(0, 0, 0, 0.80);
+    background-color: #fbfbfb;
+    box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
 }
