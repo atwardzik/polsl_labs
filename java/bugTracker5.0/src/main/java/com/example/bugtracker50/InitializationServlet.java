@@ -6,6 +6,7 @@ import model.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,13 +25,15 @@ public class InitializationServlet extends HttpServlet {
 
         var context = getServletContext();
 
-        List<User> users = new ArrayList<>();
-        users.add(new User("Artur", "Twardzik", "at"));
-        users.get(0).addRole(UserRole.REVIEWER);
-        users.add(new User("J", "Twardzik", "jt"));
+        UserManager userManager = new UserManager();
+        User user1 = new User("Artur", "Twardzik", "at", "1234");
+        user1.addRole(UserRole.REVIEWER);
+        userManager.addUser(user1);
+        User user2 = new User("Jerzy", "Twardzik", "jt", "abcd");
+        userManager.addUser(user2);
 
-        IssueManager manager = new IssueManager();
-        manager.addIssue(
+        IssueManager issueManager = new IssueManager();
+        issueManager.addIssue(
                 new Issue(
                         "Off-by-One Stack Write in syscall handler",
                         """
@@ -72,15 +75,15 @@ public class InitializationServlet extends HttpServlet {
                                     N/A
                                 </body></html>
                                 """,
-                        users.get(0), //reporter
+                        user1, //reporter
                         LocalDate.now().plusDays(7).atStartOfDay(),
-                        users.get(0), //assignee
+                        user1, //assignee
                         BugStatus.IN_PROGRESS,
                         Priority.HIGH,
                         Set.of("kernel", "memory", "stack-smash")
                 )
         );
-        manager.addIssue(
+        issueManager.addIssue(
                 new Issue(
                         "VFS Initramfs Mount Issue",
                         """
@@ -126,25 +129,25 @@ public class InitializationServlet extends HttpServlet {
                                     </ul>
                                 </body></html>
                                 """,
-                        users.get(0), //reporter
+                        user1, //reporter
                         LocalDate.now().plusDays(7).atStartOfDay(),
-                        users.get(0), //assignee
+                        user1, //assignee
                         BugStatus.REOPENED,
                         Priority.HIGH,
                         Set.of("kernel", "memory", "stack-smash")
                 )
         );
-        manager.addIssue(
+        issueManager.addIssue(
                 new Issue("Ex. Closed Issue", "<h1>This was closed</h1>",
-                        users.get(1), null, null,
+                        user2, null, null,
                         BugStatus.CLOSED, Priority.HIGH, null)
         );
-        manager.addIssue(
-                new Issue("Buffer overflow", "Serious damage", users.get(1))
+        issueManager.addIssue(
+                new Issue("Buffer overflow", "Serious damage", user2)
         );
 
-        context.setAttribute("IssueManager", manager);
+        context.setAttribute("IssueManager", issueManager);
+        context.setAttribute("UserManager", userManager);
     }
-
 }
 

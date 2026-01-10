@@ -31,9 +31,9 @@ public class IssueManagerTest {
      */
     @Test
     public void testFindIssueById() {
-        Issue issue1 = new Issue("Title1", "Desc1", new User("a", "b", "c"));
-        Issue issue2 = new Issue("Title2", "Desc2", new User("a", "b", "c"));
-        Issue issue3 = new Issue("Title3", "Desc3", new User("a", "b", "c"));
+        Issue issue1 = new Issue("Title1", "Desc1", new User("a", "b", "c", "d"));
+        Issue issue2 = new Issue("Title2", "Desc2", new User("a", "b", "c", "d"));
+        Issue issue3 = new Issue("Title3", "Desc3", new User("a", "b", "c", "d"));
 
         IssueManager manager = new IssueManager();
         manager.addIssue(issue1);
@@ -48,9 +48,9 @@ public class IssueManagerTest {
      */
     @Test
     public void testFindIssueByName() {
-        Issue issue1 = new Issue("Title1", "Desc1", new User("a", "b", "c"));
-        Issue issue2 = new Issue("Title2", "Desc2", new User("a", "b", "c"));
-        Issue issue3 = new Issue("Title3", "Desc3", new User("a", "b", "c"));
+        Issue issue1 = new Issue("Title1", "Desc1", new User("a", "b", "c", "d"));
+        Issue issue2 = new Issue("Title2", "Desc2", new User("a", "b", "c", "d"));
+        Issue issue3 = new Issue("Title3", "Desc3", new User("a", "b", "c", "d"));
 
         IssueManager manager = new IssueManager();
         manager.addIssue(issue1);
@@ -66,11 +66,11 @@ public class IssueManagerTest {
      */
     @Test
     public void testFilterByTitleSpecific() {
-        Issue issue1 = new Issue("Another1", "Desc1", new User("a", "b", "c"));
-        Issue issue2 = new Issue("Title1", "Desc2", new User("a", "b", "c"));
-        Issue issue3 = new Issue("Another2", "Desc3", new User("a", "b", "c"));
-        Issue issue4 = new Issue("Title2", "Desc4", new User("a", "b", "c"));
-        Issue issue5 = new Issue("xyzf", "Desc5", new User("a", "b", "c"));
+        Issue issue1 = new Issue("Another1", "Desc1", new User("a", "b", "c", "d"));
+        Issue issue2 = new Issue("Title1", "Desc2", new User("a", "b", "c", "d"));
+        Issue issue3 = new Issue("Another2", "Desc3", new User("a", "b", "c", "d"));
+        Issue issue4 = new Issue("Title2", "Desc4", new User("a", "b", "c", "d"));
+        Issue issue5 = new Issue("xyzf", "Desc5", new User("a", "b", "c", "d"));
 
         IssueManager manager = new IssueManager();
         manager.addIssue(issue1);
@@ -93,9 +93,9 @@ public class IssueManagerTest {
     @ParameterizedTest
     @ValueSource(strings = {"", " "})
     public void testFilterByTitleEmpty(String title) {
-        Issue issue1 = new Issue("Another1", "Desc1", new User("a", "b", "c"));
-        Issue issue2 = new Issue("Title1", "Desc2", new User("a", "b", "c"));
-        Issue issue3 = new Issue("Another2", "Desc3", new User("a", "b", "c"));
+        Issue issue1 = new Issue("Another1", "Desc1", new User("a", "b", "c", "d"));
+        Issue issue2 = new Issue("Title1", "Desc2", new User("a", "b", "c", "d"));
+        Issue issue3 = new Issue("Another2", "Desc3", new User("a", "b", "c", "d"));
 
         IssueManager manager = new IssueManager();
         manager.addIssue(issue1);

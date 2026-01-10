@@ -6,7 +6,7 @@ function showEdit(issueId) {
 
             container.innerHTML = `
                 <div class="issue-edit">
-                    <input type="text" id="issue-edit-title" value="${issueData.title}">
+                    <input type="text" class="issue-edit-title" value="${issueData.title}">
 
                     <div class="issue-edit-meta">
                         <div class="issue-edit-field">
@@ -49,7 +49,7 @@ function showEdit(issueId) {
             const prioritySelect = container.querySelector(".issue-edit-priority");
             prioritySelect.value = issueData.priority;
 
-            container.querySelector(".issue-save-btn").onclick = () => saveIssue(issueId);
+            container.querySelector(".modifier").onclick = () => saveIssue(issueId);
         })
         .catch(err => console.error(err));
 }
@@ -82,7 +82,6 @@ function saveIssue(issueId) {
             return response.text();
         })
         .then(() => {
-            alert("Issue saved successfully");
             showIssueDetails(issueId);
         })
         .catch(err => {

@@ -19,7 +19,10 @@ public class NewIssueServlet extends HttpServlet {
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletContext context = request.getServletContext();
-        IssueManager manager = (IssueManager) context.getAttribute("IssueManager");
+        IssueManager issueManager = (IssueManager) context.getAttribute("IssueManager");
+        UserManager userManager = (UserManager) context.getAttribute("UserManager");
+
+        response.setCharacterEncoding("UTF-8");
 
         try {
             String title = request.getParameter("title");
@@ -27,6 +30,7 @@ public class NewIssueServlet extends HttpServlet {
             String statusParam = request.getParameter("status");
             String priorityParam = request.getParameter("priority");
             String dueDateParam = request.getParameter("dueDate");
+            String assignee = request.getParameter("assignee");
             String tagsParam = request.getParameter("tags");
 
             if (title == null || title.isBlank()) {
@@ -71,23 +75,34 @@ public class NewIssueServlet extends HttpServlet {
                 }
             }
 
+            User assignedUser = null;
+            if (assignee != null && !assignee.isBlank()) {
+                if (userManager.usernameExists(assignee)) {
+                    assignedUser = userManager.getUser(assignee);
+                }
+            }
+
             // Create a dummy user (replace with logged-in user if available)
-            User creator = new User("", "", "");
+            User creator = new User("", "", "", "");
 
             Issue issue = new Issue(
                     title,
                     description,
                     creator,
                     dueDateTime,
-                    null,
+                    assignedUser,
                     status,
                     priority,
                     null
             );
 
-            manager.addIssue(issue);
+            issueManager.addIssue(issue);
             response.setStatus(HttpServletResponse.SC_OK);
 
+            response.setContentType("application/json");
+            Gson gson = new Gson();
+            String json = gson.toJson(issue.getRecord());
+            response.getWriter().write(json);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create issue: " + e.getMessage());
         }

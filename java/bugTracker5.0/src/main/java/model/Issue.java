@@ -303,10 +303,16 @@ public class Issue {
             due = dueDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         }
 
+        String assignedUser = "N/A";
+        if (assignee != null) {
+            assignedUser = assignee.getUsername();
+        }
+
         return new IssueListRecord(status,
                 "#" + id.toString().split("-")[0],
                 title,
                 reporter.getUsername(),
+                assignedUser,
                 createdAt.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                 due
         );

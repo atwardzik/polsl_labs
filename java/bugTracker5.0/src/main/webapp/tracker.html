@@ -12,21 +12,23 @@
           rel="stylesheet">
     <script src="https://kit.fontawesome.com/148412e972.js" crossorigin="anonymous"></script>
 
-    <script src="js/main.js?v=<%= System.currentTimeMillis() %>"></script>
-    <script src="js/list.js?v=<%= System.currentTimeMillis() %>"></script>
-    <script src="js/details.js?v=<%= System.currentTimeMillis() %>"></script>
-    <script src="js/edit.js?v=<%= System.currentTimeMillis() %>"></script>
-    <script src="js/new.js?v=<%= System.currentTimeMillis() %>"></script>
+    <script src="js/main.js"></script>
+    <script src="js/list.js"></script>
+    <script src="js/details.js"></script>
+    <script src="js/edit.js"></script>
+    <script src="js/new.js"></script>
+    <script src="js/userDetails.js"></script>
     <link rel="stylesheet" href="css/main.css"/>
     <link rel="stylesheet" href="css/list.css"/>
     <link rel="stylesheet" href="css/details.css"/>
     <link rel="stylesheet" href="css/edit.css"/>
     <link rel="stylesheet" href="css/new.css"/>
+    <link rel="stylesheet" href="css/userDetails.css"/>
 </head>
 <body>
 <div class="container">
     <div class="nav-menu">
-        <button title="User Info" class="navBtn" onclick="showUser();"><i class="fa-solid fa-user"></i></button>
+        <button title="User Info" class="navBtn" onclick="location.href='tracker.html?view=user'"><i class="fa-solid fa-user"></i></button>
         <button title="Issues List" class="navBtn" onclick="location.href='tracker.html'"><i class="fa-solid fa-list"></i></button>
         <button title="Filter Issues" class="navBtn" onclick="location.href='tracker.html?view=filter'"><i class="fa-solid fa-magnifying-glass"></i></button>
         <button title="New Issue" class="navBtn" onclick="location.href='tracker.html?view=new'"><i class="fa-solid fa-pencil"></i></button>

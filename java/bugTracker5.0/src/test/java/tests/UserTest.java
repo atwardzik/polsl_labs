@@ -24,7 +24,7 @@ public class UserTest {
      */
     @Test
     public void testRoles() {
-        User user = new User("a", "b", "c");
+        User user = new User("a", "b", "c", "d");
 
         user.addRole(UserRole.REVIEWER);
 

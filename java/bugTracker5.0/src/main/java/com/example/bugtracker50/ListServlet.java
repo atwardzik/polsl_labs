@@ -23,6 +23,13 @@ public class ListServlet extends HttpServlet {
         IssueManager manager = (IssueManager) context.getAttribute("IssueManager");
 
         List<IssueListRecord> issueList = manager.getAllIssuesRecords();
+        String username = request.getParameter("username");
+        if (username != null) {
+            issueList = issueList.stream().filter(issue ->
+                    issue.assignee().equals(username)
+            ).toList();
+        }
+
 
         Gson gson = new Gson();
         String json = gson.toJson(issueList);

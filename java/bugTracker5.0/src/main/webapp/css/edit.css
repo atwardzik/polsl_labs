@@ -49,6 +49,7 @@
     box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
     border: 2px solid rgba(0, 0, 0, 0.80);
     outline: none;
+    cursor: text !important;
 }
 
 .issue-edit-description:hover {

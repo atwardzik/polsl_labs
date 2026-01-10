@@ -95,24 +95,24 @@
 .issue-list-dueDate {
     font-size: 13px;
     color: #6e7781;
-    margin-left: 12px;
+    margin-right: 2vw;
     white-space: nowrap;
-    min-width: 5vw;
+    width: 5vw;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     .issue-list-dateCreated {
         display: none;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 850px) {
     .issue-list-dueDate {
         display: none;
     }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 650px) {
     .list-meta-info {
         display: none;
     }

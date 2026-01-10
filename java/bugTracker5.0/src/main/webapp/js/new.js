@@ -46,17 +46,26 @@ function showIssueCreator() {
 
     const assigneeInput = container.querySelector(".issue-edit-assignee");
     const assigneeSearch = container.querySelector(".search-results");
-    const items = ["abc", "def", "ghi"];
+    const items = [];
+    fetch("users-list")
+        .then(response => response.json())
+        .then(people => {
+            people.forEach(person => items.push(person.username + "@" + person.fullName));
+        })
+        .catch(err => {
+            console.error("Error status:", err.status);
+        });
 
     assigneeInput.addEventListener("input", () => {
-        const filtered = items.filter(i => i.startsWith(assigneeInput.value.toLowerCase()));
+        const filtered = items.filter(i => i.substring(i.indexOf("@") + 1).toLowerCase().startsWith(assigneeInput.value.toLowerCase()));
         assigneeSearch.innerHTML = "";
 
         filtered.forEach(item => {
             const li = document.createElement("li");
             li.textContent = item;
             li.addEventListener("click", () => {
-               assigneeInput.value = item;
+                assigneeInput.value = item;
+                assigneeSearch.style.display = "none";
             });
             assigneeSearch.appendChild(li);
         });
@@ -73,11 +82,28 @@ function showIssueCreator() {
 }
 
 function createIssue() {
-    const title = document.querySelector(".issue-edit-title").value;
-    const status = document.querySelector(".issue-edit-status").value;
-    const priority = document.querySelector(".issue-edit-priority").value;
-    const dueDate = document.querySelector(".issue-edit-dueDate").value;
-    const description = document.querySelector(".issue-edit-description").innerHTML;
+    const title = document.querySelector(".issue-edit-title");
+    const status = document.querySelector(".issue-edit-status");
+    const priority = document.querySelector(".issue-edit-priority");
+    const dueDate = document.querySelector(".issue-edit-dueDate");
+    const assignee = document.querySelector(".issue-edit-assignee");
+    const description = document.querySelector(".issue-edit-description");
+
+    let errorFlag = false;
+    if (title.value.length === 0) {
+        title.className += " inputError";
+        errorFlag = true;
+    }
+
+    if (description.innerHTML.trim().length === 0) {
+        description.className += " inputError";
+        errorFlag = true;
+    }
+
+    if (errorFlag) {
+        alert("Title and Description fields are obligatory.");
+        return;
+    }
 
     fetch("new-issue-servlet", {
         method: "POST",
@@ -85,11 +111,12 @@ function createIssue() {
             "Content-Type": "application/x-www-form-urlencoded"
         },
         body: new URLSearchParams({
-            title: title,
-            status: status,
-            priority: priority,
-            dueDate: dueDate,
-            description: description
+            title: title.value,
+            status: status.value,
+            priority: priority.value,
+            dueDate: dueDate.value,
+            assignee: assignee.value.substring(0, assignee.value.indexOf("@") - 1),
+            description: description.innerHTML
         })
     })
         .then(async response => {
@@ -97,11 +124,10 @@ function createIssue() {
                 const errorText = await response.text();
                 throw {status: response.status, message: errorText};
             }
-            return response.text();
+            return response.json();
         })
-        .then(() => {
-            alert("Issue created successfully");
-            showList();
+        .then(issue => {
+            window.location.replace(`tracker.html?view=issue&id=${issue.id.substring(1)}`);
         })
         .catch(err => {
             console.error("Error status:", err.status);

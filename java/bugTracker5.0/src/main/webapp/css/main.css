@@ -121,3 +121,20 @@ textarea:focus {
     background-color: #fbfbfb;
     box-shadow: 0 10px 20px rgba(82, 150, 255, 0.18);
 }
+
+input:focus,
+textarea:focus {
+    cursor: text !important;
+}
+
+.inputError {
+    border: 2px solid red !important;
+    box-shadow: 0 10px 20px rgba(255, 0, 0, 0.18) !important;
+}
+
+.inputError:hover {
+    border: 2px solid red !important;
+    background-color: #fbfbfb !important;
+    box-shadow: 0 10px 20px rgba(255, 0, 0, 0.18) !important;
+    cursor: pointer;
+}

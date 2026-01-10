@@ -48,7 +48,7 @@ public class IssueTest {
     @Test
     public void testShortIssueValidCreation() {
         assertDoesNotThrow(
-                () -> new Issue("Title", "Description", new User("Name", "Surname", "Username")),
+                () -> new Issue("Title", "Description", new User("Name", "Surname", "Username", "Password")),
                 "All data is correct, an exception should not be thrown");
     }
 
@@ -61,7 +61,7 @@ public class IssueTest {
     @EmptySource
     public void testShortIssueNoTitleCreation(String title) {
         InvalidIssueDataException exception = assertThrows(InvalidIssueDataException.class,
-                () -> new Issue(title, "desc", new User("A", "B", "C")),
+                () -> new Issue(title, "desc", new User("A", "B", "C", "D")),
                 "An exception should be thrown when the User is null"
         );
 
@@ -77,7 +77,7 @@ public class IssueTest {
     @EmptySource
     public void testShortIssueNoDescCreation(String description) {
         InvalidIssueDataException exception = assertThrows(InvalidIssueDataException.class,
-                () -> new Issue("Title", description, new User("A", "B", "C")),
+                () -> new Issue("Title", description, new User("A", "B", "C", "D")),
                 "An exception should be thrown when the issue description is null or missing"
         );
 
@@ -90,7 +90,7 @@ public class IssueTest {
      */
     @Test
     public void testAddDueDateBeforeNow() {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
 
         InvalidIssueDataException exception = assertThrows(InvalidIssueDataException.class,
                 () -> issue.setDueDate(LocalDateTime.now().minusDays(1)),
@@ -106,7 +106,7 @@ public class IssueTest {
     @ParameterizedTest
     @EnumSource(Priority.class)
     public void testSetPriority(Priority priority) {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
 
         assertDoesNotThrow(
                 () -> issue.setPriority(priority),
@@ -120,7 +120,7 @@ public class IssueTest {
     @ParameterizedTest
     @EnumSource(BugStatus.class)
     public void testSetStatus(BugStatus status) {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
 
         assertDoesNotThrow(
                 () -> issue.setStatus(status),
@@ -133,7 +133,7 @@ public class IssueTest {
      */
     @Test
     public void testAssignNullUser() {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
 
         InvalidIssueDataException exception = assertThrows(InvalidIssueDataException.class,
                 () -> issue.assignUser(null),
@@ -149,8 +149,8 @@ public class IssueTest {
      */
     @Test
     public void testAssignUser() {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
-        User assignee = new User("as", "ig", "nee");
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
+        User assignee = new User("as", "ig", "nee", "iso");
 
         issue.assignUser(assignee);
 
@@ -164,7 +164,7 @@ public class IssueTest {
     @ParameterizedTest
     @ValueSource(strings = {"", " ", "tag1"})
     public void testAddVariousTags(String tag) {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
 
         assertDoesNotThrow(() -> issue.addTag(tag), "All data is correct, an exception should not be thrown");
     }
@@ -175,7 +175,7 @@ public class IssueTest {
      */
     @Test
     public void testAddCorrectTags() {
-        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c"));
+        Issue issue = new Issue("Title", "Desc", new User("a", "b", "c", "d"));
         List<String> initTags = List.of("tag1", "tag2", "tag3");
 
         initTags.forEach(issue::addTag);
@@ -193,17 +193,17 @@ public class IssueTest {
     public void testUpdateFromDifferentFields() {
         Issue original = new Issue("Old title",
                 "Old Description",
-                new User("Alice", "A", "aalice"),
+                new User("Alice", "A", "aalice", "aa"),
                 LocalDateTime.now().plusDays(1),
-                new User("Bob", "B", "bbob"),
+                new User("Bob", "B", "bbob", "bb"),
                 BugStatus.OPEN, Priority.HIGH, Set.of("Tag")
         );
 
         Issue updated = new Issue("New title",
                 "New Description",
-                new User("Alice", "A", "aalice"),
+                new User("Alice", "A", "aalice", "aa"),
                 LocalDateTime.now().plusDays(1),
-                new User("Evil", "E", "eevil"),
+                new User("Evil", "E", "eevil", "bb"),
                 BugStatus.CLOSED, Priority.CRITICAL, Set.of("Tag")
         );
 
