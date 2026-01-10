@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 
-@WebServlet("/edit-issue-servlet")
+@WebServlet("/edit-issue")
 public class EditIssueServlet extends HttpServlet {
     public void init() {
     }

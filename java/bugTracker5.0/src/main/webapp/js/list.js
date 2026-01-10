@@ -1,5 +1,5 @@
 function showList() {
-    fetch("list-servlet")
+    fetch("list-issues")
         .then(response => response.json())
         .then(issues => {
             const container = document.getElementById("contents");

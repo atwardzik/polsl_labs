@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@WebServlet("/new-issue-servlet")
+@WebServlet("/new-issue")
 public class NewIssueServlet extends HttpServlet {
     public void init() {
     }

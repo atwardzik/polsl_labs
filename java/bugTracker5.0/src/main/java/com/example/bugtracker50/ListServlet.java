@@ -10,7 +10,7 @@ import jakarta.servlet.annotation.*;
 import model.IssueListRecord;
 import model.IssueManager;
 
-@WebServlet("/list-servlet")
+@WebServlet("/list-issues")
 public class ListServlet extends HttpServlet {
     public void init() {
     }

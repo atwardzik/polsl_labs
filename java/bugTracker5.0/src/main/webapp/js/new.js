@@ -105,7 +105,7 @@ function createIssue() {
         return;
     }
 
-    fetch("new-issue-servlet", {
+    fetch("new-issue", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"

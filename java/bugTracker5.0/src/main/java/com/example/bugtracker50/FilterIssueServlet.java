@@ -12,7 +12,7 @@ import model.IssueManager;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/filter-issue-servlet")
+@WebServlet("/filter-issue")
 public class FilterIssueServlet extends HttpServlet {
     public void init() {
     }

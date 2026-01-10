@@ -33,7 +33,7 @@ function showIssueDetails(issueId) {
 
             select.addEventListener("change", () => {
                 const newStatus = select.value;
-                fetch("edit-issue-servlet", {
+                fetch("edit-issue", {
                     method: "POST",
                     headers: {"Content-Type": "application/x-www-form-urlencoded"},
                     body: `id=${encodeURIComponent(issueId)}&status=${encodeURIComponent(newStatus)}`

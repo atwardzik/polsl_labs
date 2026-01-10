@@ -61,7 +61,7 @@ function saveIssue(issueId) {
     const dueDate = document.querySelector(".issue-edit-dueDate").value;
     const description = document.querySelector(".issue-edit-description").innerHTML;
 
-    fetch("edit-issue-servlet", {
+    fetch("edit-issue", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"

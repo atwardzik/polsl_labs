@@ -31,11 +31,12 @@ function showUser(username) {
             container.appendChild(rolesBox);
         })
         .catch(err => {
-            alert("Failed to fetch user");
-            console.error(err);
+            console.error("Error status:", err.status);
+            console.error("Error message:", err.message);
+            alert(`Failed to fetch user: ${err.message} (code ${err.status})`);
         });
 
-    fetch(`list-servlet?username=${username}`)
+    fetch(`list-issues?username=${username}`)
         .then(response => response.json())
         .then(issues => {
             const myIssuesLabel = document.createElement("p");
