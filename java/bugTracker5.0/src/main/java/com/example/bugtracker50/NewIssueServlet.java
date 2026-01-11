@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import model.*;
 
 import java.io.IOException;
@@ -82,8 +83,15 @@ public class NewIssueServlet extends HttpServlet {
                 }
             }
 
-            // Create a dummy user (replace with logged-in user if available)
-            User creator = new User("", "", "", "");
+            User creator = null;
+            HttpSession session = request.getSession(false);
+            String userID = (String) session.getAttribute("userID");
+            if (userID != null) {
+                creator = userManager.getUserById(userID);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{}");
+            }
 
             Issue issue = new Issue(
                     title,

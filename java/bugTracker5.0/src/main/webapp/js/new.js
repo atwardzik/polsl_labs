@@ -115,7 +115,7 @@ function createIssue() {
             status: status.value,
             priority: priority.value,
             dueDate: dueDate.value,
-            assignee: assignee.value.substring(0, assignee.value.indexOf("@") - 1),
+            assignee: assignee.value.substring(0, assignee.value.indexOf("@")),
             description: description.innerHTML
         })
     })

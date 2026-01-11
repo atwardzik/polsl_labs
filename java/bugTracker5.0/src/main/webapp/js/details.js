@@ -47,10 +47,6 @@ function showIssueDetails(issueId) {
                             throw new Error("Unexpected error");
                         }
 
-                        return await response.json();
-                    })
-                    .then(issue => {
-                        if (!issue) return;
                         location.reload();
                     })
                     .catch(err => {

@@ -19,9 +19,6 @@ public class UserServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-
-        response.setContentType("application/json;charset=UTF-8");
-
         ServletContext context = request.getServletContext();
         UserManager userManager = (UserManager) context.getAttribute("UserManager");
 
