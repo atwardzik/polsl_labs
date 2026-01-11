@@ -1,12 +1,12 @@
 function showEdit(issueId) {
     fetch(`issue-details?id=${issueId}`)
         .then(response => response.json())
-        .then(issueData => {
+        .then(issue => {
             const container = document.getElementById("contents");
 
             container.innerHTML = `
                 <div class="issue-edit">
-                    <input type="text" class="issue-edit-title" value="${issueData.title}">
+                    <input type="text" class="issue-edit-title" value="${issue.data.title}">
 
                     <div class="issue-edit-meta">
                         <div class="issue-edit-field">
@@ -31,12 +31,12 @@ function showEdit(issueId) {
 
                         <div class="issue-edit-field">
                             <label>Due date</label>
-                            <input type="date" class="issue-edit-dueDate" value="${issueData.dueDate}">
+                            <input type="date" class="issue-edit-dueDate" value="${issue.data.dueDate}">
                         </div>
                     </div>
 
                     <div class="issue-edit-description" contenteditable="true">
-                        ${issueData.description || ""}
+                        ${issue.data.description || ""}
                     </div>
 
                     <button class="modifier">Save</button>
@@ -44,10 +44,10 @@ function showEdit(issueId) {
             `;
 
             const statusSelect = container.querySelector(".issue-edit-status");
-            statusSelect.value = issueData.status;
+            statusSelect.value = issue.data.status;
 
             const prioritySelect = container.querySelector(".issue-edit-priority");
-            prioritySelect.value = issueData.priority;
+            prioritySelect.value = issue.data.priority;
 
             container.querySelector(".modifier").onclick = () => saveIssue(issueId);
         })

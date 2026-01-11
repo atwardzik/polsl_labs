@@ -13,6 +13,17 @@ import model.UserManager;
 
 import java.io.IOException;
 
+/**
+ * LoginServlet handles POST requests for user authentication.
+ * <p>
+ * It verifies the provided username and password against the UserManager.
+ * If authentication succeeds, it creates a session and returns the user record as JSON.
+ * If authentication fails or input is invalid, it responds with the appropriate HTTP status and message.
+ * </p>
+ * <p>
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     public void init() {

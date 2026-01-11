@@ -13,11 +13,31 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * NewIssueServlet handles POST requests to create a new issue in the system.
+ * <p>
+ * It validates required fields (title and description), parses optional fields
+ * (status, priority, due date, assignee, tags), associates the issue with the
+ * logged-in user, and adds it to the IssueManager. The created issue record is
+ * returned as JSON. Appropriate HTTP status codes are returned for invalid input
+ * or errors.
+ * </p>
+ * <p>
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet("/new-issue")
 public class NewIssueServlet extends HttpServlet {
     public void init() {
     }
 
+    /**
+     * Handles POST requests to create a new issue.
+     *
+     * @param request  the HttpServletRequest containing issue parameters
+     * @param response the HttpServletResponse used to send JSON data or error messages
+     * @throws IOException if an I/O error occurs while writing the response
+     */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletContext context = request.getServletContext();
         IssueManager issueManager = (IssueManager) context.getAttribute("IssueManager");

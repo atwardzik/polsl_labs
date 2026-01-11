@@ -11,11 +11,29 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 
+/**
+ * EditIssueServlet handles POST requests to edit an existing issue.
+ * It updates optional fields like title, status, priority, due date, and description
+ * for the issue identified by its ID fragment.
+ * <p>
+ * If the issue ID is missing or invalid, it responds with HTTP 400 (Bad Request) or 404 (Not Found).
+ * Any invalid field values also result in HTTP 400.
+ *
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet("/edit-issue")
 public class EditIssueServlet extends HttpServlet {
     public void init() {
     }
 
+    /**
+     * Handles POST requests to update an issue's details.
+     *
+     * @param request  the HttpServletRequest containing parameters for issue update
+     * @param response the HttpServletResponse used to send status codes
+     * @throws IOException if an I/O error occurs while processing the request
+     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         ServletContext context = request.getServletContext();

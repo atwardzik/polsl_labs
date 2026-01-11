@@ -15,8 +15,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * IssueDetailsServlet handles GET requests to retrieve detailed information
+ * about a specific issue in JSON format.
+ * <p>
+ * The servlet resolves the user's locale using the "lang" cookie if available
+ * and localizes field names and statuses accordingly. If the issue is not found,
+ * it returns a JSON message indicating that.
+ * </p>
+ *
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet("/issue-details")
 public class IssueDetailsServlet extends HttpServlet {
+
+    /**
+     * Resolves the locale for the request, using the "lang" cookie if present.
+     *
+     * @param request the HttpServletRequest to resolve the locale from
+     * @return the resolved Locale
+     */
     public static Locale resolve(HttpServletRequest request) {
         if (request.getCookies() == null) {
             return request.getLocale();
@@ -31,6 +50,14 @@ public class IssueDetailsServlet extends HttpServlet {
         return request.getLocale();
     }
 
+    /**
+     * Handles GET requests to retrieve a specific issue's details as JSON.
+     * Localizes field names and statuses according to the user's locale.
+     *
+     * @param request  the HttpServletRequest containing the issue ID parameter
+     * @param response the HttpServletResponse used to write JSON output
+     * @throws IOException if an I/O error occurs while writing the response
+     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 

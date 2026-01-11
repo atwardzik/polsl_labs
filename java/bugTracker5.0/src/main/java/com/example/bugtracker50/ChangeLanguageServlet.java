@@ -1,20 +1,29 @@
 package com.example.bugtracker50;
 
-import com.google.gson.Gson;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import model.IssueListRecord;
-import model.IssueManager;
 
 import java.io.IOException;
-import java.util.List;
 
+/**
+ * ChangeLanguageServlet handles requests to change the user's language preference.
+ * It sets a "lang" cookie with the selected language, defaulting to "en" if none is provided.
+ *
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet("/change-language")
 public class ChangeLanguageServlet extends HttpServlet {
     public void init() {
     }
 
+    /**
+     * Processes both GET and POST requests to update the language cookie.
+     *
+     * @param request  the HttpServletRequest object
+     * @param response the HttpServletResponse object
+     * @throws IOException if an I/O error occurs while setting the cookie
+     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String lang = request.getParameter("lang");

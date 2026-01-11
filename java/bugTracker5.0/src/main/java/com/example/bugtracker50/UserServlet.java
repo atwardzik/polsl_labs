@@ -12,6 +12,16 @@ import model.UserManager;
 
 import java.io.IOException;
 
+/**
+ * UserServlet handles GET requests to retrieve details of the currently logged-in user.
+ * <p>
+ * It reads the "userID" from the session and returns the user's full record as JSON.
+ * If no session or user is found, it responds with HTTP 401 Unauthorized and an empty JSON object.
+ * </p>
+ * <p>
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet("/user-details")
 public class UserServlet extends HttpServlet {
     public void init() {

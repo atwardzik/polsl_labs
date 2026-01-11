@@ -5,14 +5,24 @@ import jakarta.servlet.http.HttpServlet;
 import model.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+/**
+ * InitializationServlet is executed on application startup to initialize
+ * the application environment. It determines which repository type to use
+ * (MEMORY or MOCK) and performs any necessary setup before other servlets are accessed.
+ * <p>
+ * This servlet is configured to load on startup.
+ *
+ * @author Artur Twardzik
+ * @version 0.5
+ */
 @WebServlet(name = "Initialization", urlPatterns = "/init", loadOnStartup = 1)
 public class InitializationServlet extends HttpServlet {
 
+    /**
+     * Enum representing available repository types.
+     */
     enum RepositoryType {
         MEMORY,
         MOCK
