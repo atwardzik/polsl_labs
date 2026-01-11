@@ -17,6 +17,19 @@ import java.util.ResourceBundle;
 
 @WebServlet("/issue-details")
 public class IssueDetailsServlet extends HttpServlet {
+    public static Locale resolve(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return request.getLocale();
+        }
+
+        for (Cookie c : request.getCookies()) {
+            if ("lang".equals(c.getName())) {
+                return Locale.forLanguageTag(c.getValue());
+            }
+        }
+
+        return request.getLocale();
+    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -33,7 +46,7 @@ public class IssueDetailsServlet extends HttpServlet {
         Gson gson = new Gson();
 
         if (issue.isPresent()) {
-            Locale locale = new Locale("de");
+            Locale locale = resolve(request);
             ResourceBundle b = ResourceBundle.getBundle("i18n.messages", locale);
 
             Map<String, String> lcl = Map.ofEntries(

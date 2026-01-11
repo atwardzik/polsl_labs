@@ -3,10 +3,7 @@ package com.example.bugtracker50;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 import model.IssueListRecord;
 import model.IssueManager;
 
@@ -18,9 +15,8 @@ public class ChangeLanguageServlet extends HttpServlet {
     public void init() {
     }
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ServletContext context = request.getServletContext();
-
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         String lang = request.getParameter("lang");
         if (lang == null) {
             lang = "en";
@@ -30,6 +26,14 @@ public class ChangeLanguageServlet extends HttpServlet {
         languageCookie.setPath("/");
         languageCookie.setMaxAge(60 * 60 * 24 * 365);
         response.addCookie(languageCookie);
+    }
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        processRequest(request, response);
+    }
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        processRequest(request, response);
     }
 
     public void destroy() {
