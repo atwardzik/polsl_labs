@@ -121,8 +121,7 @@ function createIssue() {
     })
         .then(async response => {
             if (response.status === 401 || response.status === 400) {
-                const msg = await response.text();
-                return null;
+                throw new Error("You are not logged in!");
             }
 
             if (!response.ok) {
@@ -136,8 +135,7 @@ function createIssue() {
             globalThis.location.replace(`tracker.html?view=issue&id=${issue.id.substring(1)}`);
         })
         .catch(err => {
-            console.error("Error status:", err.status);
             console.error("Error message:", err.message);
-            alert(`Failed to save issue: ${err.message} (code ${err.status})`);
+            alert(`Failed to save issue: ${err.message}`);
         });
 }

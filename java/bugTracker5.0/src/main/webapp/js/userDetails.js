@@ -2,8 +2,19 @@ function showUser(username) {
     const container = document.getElementById("contents");
     container.innerHTML = "";
 
-    fetch(`user-details?username=${username}`)
-        .then(response => response.json())
+    fetch(`user-details`)
+        .then(async response => {
+            if (response.status === 401 || response.status === 400) {
+                alert(`Failed to fetch user: You are not logged in!`);
+                window.location = 'index.jsp';
+            }
+
+            if (!response.ok) {
+                throw new Error("Unexpected error");
+            }
+
+            return await response.json();
+        })
         .then(userData => {
             container.innerHTML = `
                 <div>
@@ -29,26 +40,19 @@ function showUser(username) {
             rolesBox.appendChild(roles);
 
             container.appendChild(rolesBox);
-        })
-        .catch(err => {
-            console.error("Error status:", err.status);
-            console.error("Error message:", err.message);
-            alert(`Failed to fetch user: ${err.message} (code ${err.status})`);
-        });
+            fetch(`list-issues?username=${userData.username}`)
+                .then(response => response.json())
+                .then(issues => {
+                    const myIssuesLabel = document.createElement("p");
+                    myIssuesLabel.innerHTML = "<strong>My Issues:</strong>";
+                    container.appendChild(myIssuesLabel);
 
-    fetch(`list-issues?username=${username}`)
-        .then(response => response.json())
-        .then(issues => {
-            const myIssuesLabel = document.createElement("p");
-            myIssuesLabel.innerHTML = "<strong>My Issues:</strong>";
-            container.appendChild(myIssuesLabel);
-
-            issues.forEach(issue => {
-                const card = document.createElement("a");
-                card.className = "issues-card";
-                card.href = `tracker.html?view=issue&id=${issue.id.substring(1)}`;
-                card.className = "issues-card";
-                card.innerHTML = `
+                    issues.forEach(issue => {
+                        const card = document.createElement("a");
+                        card.className = "issues-card";
+                        card.href = `tracker.html?view=issue&id=${issue.id.substring(1)}`;
+                        card.className = "issues-card";
+                        card.innerHTML = `
                     <div class="issue-main">
                         <div class="issue-list-id">${issue.id.substring(1)}</div>
                         <div class="issue-list-title">${issue.title}</div>
@@ -59,10 +63,15 @@ function showUser(username) {
                         <div title="Created on" class="issue-list-dateCreated">${issue.dateCreated}</div>
                     </div>
                 `;
-                container.appendChild(card);
-            });
+                        container.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
         })
-        .catch(error => {
-            console.error("Error:", error);
+        .catch(err => {
+            console.error("Error message:", err.message);
         });
+
 }

@@ -1,35 +1,35 @@
 function showIssueDetails(issueId) {
     fetch(`issue-details?id=${issueId}`)
         .then(response => response.json())
-        .then(issueData => {
+        .then(issue => {
             const container = document.getElementById("contents");
             container.innerHTML = `
                 <div class="issue-meta">
-                    <h1>${issueData.title}</h1>
-                    <p><strong>ID:</strong> <span class="issue-id">${issueData.id}</span></p>
-                    <p><strong>Author:</strong> ${issueData.authorFullName} (${issueData.authorUsername})</p>
-                    <p><strong>Status:</strong> ${issueData.status.replace("_", " ")}</p>
-                    <p><strong>Priority:</strong> ${issueData.priority}</p>
-                    <p><strong>Created:</strong> ${issueData.dateCreated}</p>
-                    <p><strong>Due:</strong> ${issueData.dueDate}</p>
+                    <h1>${issue.data.title}</h1>
+                    <p><strong>${issue.locale.id}:</strong> <span class="issue-id">${issue.data.id}</span></p>
+                    <p><strong>${issue.locale.author}:</strong> ${issue.data.authorFullName} (${issue.data.authorUsername})</p>
+                    <p><strong>${issue.locale.status}:</strong> ${issue.locale[issue.data.status]}</p>
+                    <p><strong>${issue.locale.priority}:</strong> ${issue.locale[issue.data.priority]}</p>
+                    <p><strong>${issue.locale.createdOn}:</strong> ${issue.data.dateCreated}</p>
+                    <p><strong>${issue.locale.dueOn}:</strong> ${issue.data.dueDate}</p>
                 </div>
                 <div class="issue-description">
-                    ${issueData.description}
+                    ${issue.data.description}
                 </div>
                 <div class="issue-edit-bar">
                     <span class="modifier" onclick="window.location='tracker.html?view=edit&id=${issueId}';">Edit</span>
                     <span class="modifier" onclick="">Assign</span>
                     <select id="status-select">
-                        <option value="OPEN">Open</option>
-                        <option value="CLOSED">Closed</option>
-                        <option value="IN_PROGRESS">In Progress</option>
-                        <option value="REOPENED">Reopened</option>
+                        <option value="OPEN">${issue.locale.OPEN}</option>
+                        <option value="CLOSED">${issue.locale.CLOSED}</option>
+                        <option value="IN_PROGRESS">${issue.locale.IN_PROGRESS}</option>
+                        <option value="REOPENED">${issue.locale.REOPENED}</option>
                     </select>
                 </div>
             `;
 
             const select = container.querySelector("#status-select");
-            select.value = issueData.status;
+            select.value = issue.data.status;
 
             select.addEventListener("change", () => {
                 const newStatus = select.value;
@@ -38,13 +38,24 @@ function showIssueDetails(issueId) {
                     headers: {"Content-Type": "application/x-www-form-urlencoded"},
                     body: `id=${encodeURIComponent(issueId)}&status=${encodeURIComponent(newStatus)}`
                 })
-                    .then(response => {
-                        if (!response.ok) throw new Error("Update failed");
+                    .then(async response => {
+                        if (response.status === 401 || response.status === 400) {
+                            throw new Error("You are not logged in!");
+                        }
+
+                        if (!response.ok) {
+                            throw new Error("Unexpected error");
+                        }
+
+                        return await response.json();
+                    })
+                    .then(issue => {
+                        if (!issue) return;
                         location.reload();
                     })
                     .catch(err => {
-                        alert("Failed to update status");
-                        console.error(err);
+                        console.error("Error message:", err.message);
+                        alert(`Failed to update issue: ${err.message}`);
                     });
             });
         })

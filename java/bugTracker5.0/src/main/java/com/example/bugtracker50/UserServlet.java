@@ -6,6 +6,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.User;
 import model.UserManager;
 
 import java.io.IOException;
@@ -23,19 +25,18 @@ public class UserServlet extends HttpServlet {
         ServletContext context = request.getServletContext();
         UserManager userManager = (UserManager) context.getAttribute("UserManager");
 
-        String username = request.getParameter("username");
-        if (username == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType("text/plain");
-            response.getWriter().write("Username should not be empty!");
-            response.getWriter().flush();
-            return;
-        }
+        HttpSession session = request.getSession(false);
+        response.setContentType("application/json");
 
-        if (userManager.usernameExists(username)) {
+        String userID = (String) session.getAttribute("userID");
+        if (session != null && userID != null) {
             Gson gson = new Gson();
-            String json = gson.toJson(userManager.getUser(username).getFullRecord());
+            String json = gson.toJson(userManager.getUserById(userID).getFullRecord());
             response.getWriter().write(json);
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{}");
         }
     }
 

@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
         showEdit(id);
     } else if (view === "new") {
         showIssueCreator();
-    } else if (view === "user" && username) {
+    } else if (view === "user") {
         showUser(username);
     } else {
         showList();

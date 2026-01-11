@@ -57,7 +57,7 @@ function login(event) {
         .then(user => {
             if (!user) return;
             globalThis.location.replace(
-                `tracker.html?view=user&username=${user.username}`
+                `tracker.html?view=user`
             );
         })
         .catch(err => {

@@ -66,6 +66,22 @@ public class UserManager {
     }
 
     /**
+     * Gets the user
+     *
+     * @param id specifying the user to be returned
+     * @return user or null if no such user exists
+     */
+    public User getUserById(String id) {
+        for (User user : users) {
+            if (id.equals(user.getId().toString())) {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Retrieves all users records
      *
      * @return user set as String records
