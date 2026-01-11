@@ -1,6 +1,6 @@
 package com.example.bugtracker50;
 
-import com.password4j.Hash;
+import com.google.gson.Gson;
 import com.password4j.Password;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.annotation.WebServlet;
@@ -43,20 +43,26 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        Hash hash = Password.hash(password)
-                .addPepper("shared-secret")
-                .addRandomSalt(32)
-                .withArgon2();
-        String passwordHash = hash.getResult();
-
         User user = userManager.getUser(username);
-        if (user.getPasswordHash().equals(passwordHash)) {
+
+        boolean verified = Password
+                .check(password, user.getPasswordHash())
+                .addPepper("shared-secret")
+                .withArgon2();
+
+        if (verified) {
             HttpSession session = request.getSession(true);
             session.setAttribute("userID", user.getId().toString());
 
+            Gson gson = new Gson();
+            String json = gson.toJson(user.getRecord());
+
+            response.getWriter().write(json);
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("text/plain");
+            response.getWriter().write("Invalid username or password");
         }
     }
 

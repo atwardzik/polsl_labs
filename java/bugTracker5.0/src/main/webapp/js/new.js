@@ -120,14 +120,20 @@ function createIssue() {
         })
     })
         .then(async response => {
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw {status: response.status, message: errorText};
+            if (response.status === 401 || response.status === 400) {
+                const msg = await response.text();
+                return null;
             }
-            return response.json();
+
+            if (!response.ok) {
+                throw new Error("Unexpected error");
+            }
+
+            return await response.json();
         })
         .then(issue => {
-            window.location.replace(`tracker.html?view=issue&id=${issue.id.substring(1)}`);
+            if (!issue) return;
+            globalThis.location.replace(`tracker.html?view=issue&id=${issue.id.substring(1)}`);
         })
         .catch(err => {
             console.error("Error status:", err.status);
