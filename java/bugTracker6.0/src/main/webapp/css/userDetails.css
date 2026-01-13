@@ -1,0 +1,27 @@
+.userRoles {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    list-style: none;
+    margin-top: 10px;
+    padding: 5px;
+}
+
+.userRoles li {
+    height: 30px;
+    max-width: 150px;
+    padding: 5px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+
+    border: 1px solid black;
+    border-radius: 5px;
+
+    white-space: nowrap;
+}
