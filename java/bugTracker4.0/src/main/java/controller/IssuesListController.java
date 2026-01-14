@@ -82,7 +82,7 @@ public class IssuesListController {
         });
         ObservableList<Issue> list = FXCollections.observableArrayList();
 
-        list.addAll(parent.getIssuesList());
+        list.addAll(parent.getManager().getAllIssues());
         issuesList.setItems(list);
         issuesList.getSelectionModel().select(0);
 
@@ -101,7 +101,7 @@ public class IssuesListController {
         int current = issuesList.getSelectionModel().getSelectedIndex();
         ObservableList<Issue> list = FXCollections.observableArrayList();
 
-        list.addAll(parent.getIssuesList());
+        list.addAll(parent.getManager().getAllIssues());
         issuesList.setItems(list);
         issuesList.getSelectionModel().select(current);
         issuesList.refresh();

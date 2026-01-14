@@ -90,7 +90,9 @@ public class IssueDetailsServlet extends HttpServlet {
                     Map.entry("LOW", b.getString("issue.LOW")),
                     Map.entry("MEDIUM", b.getString("issue.MEDIUM")),
                     Map.entry("HIGH", b.getString("issue.HIGH")),
-                    Map.entry("CRITICAL", b.getString("issue.CRITICAL"))
+                    Map.entry("CRITICAL", b.getString("issue.CRITICAL")),
+                    Map.entry("edit", b.getString("issue.edit")),
+                    Map.entry("assign", b.getString("issue.assign"))
             );
 
             JsonResponse res = new JsonResponse<>(issue.get().getFullRecord(), lcl);

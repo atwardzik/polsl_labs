@@ -17,8 +17,8 @@ function showIssueDetails(issueId) {
                     ${issue.data.description}
                 </div>
                 <div class="issue-edit-bar">
-                    <span class="modifier" onclick="window.location='tracker.html?view=edit&id=${issueId}';">Edit</span>
-                    <span class="modifier" onclick="">Assign</span>
+                    <span class="modifier" onclick="window.location='tracker.html?view=edit&id=${issueId}';">${issue.locale.edit}</span>
+                    <span class="modifier" onclick="">${issue.locale.assign}</span>
                     <select id="status-select">
                         <option value="OPEN">${issue.locale.OPEN}</option>
                         <option value="CLOSED">${issue.locale.CLOSED}</option>

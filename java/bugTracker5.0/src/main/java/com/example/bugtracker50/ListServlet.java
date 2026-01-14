@@ -2,6 +2,9 @@ package com.example.bugtracker50;
 
 import java.io.*;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import com.google.gson.Gson;
 import jakarta.servlet.ServletContext;
@@ -16,12 +19,33 @@ import model.IssueManager;
  * <p>
  * Response content type is set to "application/json" with UTF-8 encoding.
  * <p>
+ *
  * @author Artur Twardzik
  * @version 0.5
  */
 @WebServlet("/list-issues")
 public class ListServlet extends HttpServlet {
     public void init() {
+    }
+
+    /**
+     * Resolves the locale for the request, using the "lang" cookie if present.
+     *
+     * @param request the HttpServletRequest to resolve the locale from
+     * @return the resolved Locale
+     */
+    public static Locale resolve(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return request.getLocale();
+        }
+
+        for (Cookie c : request.getCookies()) {
+            if ("lang".equals(c.getName())) {
+                return Locale.forLanguageTag(c.getValue());
+            }
+        }
+
+        return request.getLocale();
     }
 
     /**
@@ -46,9 +70,22 @@ public class ListServlet extends HttpServlet {
             ).toList();
         }
 
+        Locale locale = resolve(request);
+        ResourceBundle b = ResourceBundle.getBundle("i18n.messages", locale);
+
+        Map<String, String> lcl = Map.ofEntries(
+                Map.entry("author", b.getString("issue.author")),
+                Map.entry("createdOn", b.getString("issue.createdOn")),
+                Map.entry("dueOn", b.getString("issue.dueOn")),
+                Map.entry("IN_PROGRESS", b.getString("issue.IN_PROGRESS")),
+                Map.entry("OPEN", b.getString("issue.OPEN")),
+                Map.entry("CLOSED", b.getString("issue.CLOSED")),
+                Map.entry("REOPENED", b.getString("issue.REOPENED"))
+        );
 
         Gson gson = new Gson();
-        String json = gson.toJson(issueList);
+        JsonResponse res = new JsonResponse<>(issueList, lcl);
+        String json = gson.toJson(res);
 
         response.getWriter().write(json);
     }
