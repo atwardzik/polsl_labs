@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Class holding all users
+ *
+ * @author Artur Twardzik
+ * @version 0.6
+ */
 public class DatabaseUserRepository implements UserRepository {
     private static final EntityManagerFactory emf =
             Persistence.createEntityManagerFactory("bug_tracker_db");
@@ -41,8 +47,7 @@ public class DatabaseUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             TypedQuery<User> query = em.createQuery(
                     "SELECT u FROM User u WHERE u.username = :username",
                     User.class
@@ -51,26 +56,20 @@ public class DatabaseUserRepository implements UserRepository {
 
             List<User> result = query.getResultList();
             return result.stream().findFirst();
-        } finally {
-            em.close();
         }
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             User user = em.find(User.class, id);
             return Optional.ofNullable(user);
-        } finally {
-            em.close();
         }
     }
 
     @Override
     public boolean existsByUsername(String username) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             Long count = em.createQuery(
                             "SELECT COUNT(u) FROM User u WHERE u.username = :username",
                             Long.class
@@ -78,21 +77,16 @@ public class DatabaseUserRepository implements UserRepository {
                     .getSingleResult();
 
             return count > 0;
-        } finally {
-            em.close();
         }
     }
 
     @Override
     public List<User> findAll() {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             return em.createQuery(
                     "SELECT u FROM User u ORDER BY u.createdOn",
                     User.class
             ).getResultList();
-        } finally {
-            em.close();
         }
     }
 }

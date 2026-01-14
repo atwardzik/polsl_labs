@@ -120,7 +120,7 @@ public class IssueManager {
      * @return a list of {@link Issue} objects reported by the given user
      */
     public List<Issue> findByReporter(User reporter) {
-        return issueRepository.findByReporter(reporter);
+        return issueRepository.findByAuthor(reporter);
     }
 
     /**

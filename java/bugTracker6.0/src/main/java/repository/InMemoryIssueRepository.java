@@ -60,9 +60,9 @@ public class InMemoryIssueRepository implements IssueRepository {
     }
 
     @Override
-    public List<Issue> findByReporter(User reporter) {
+    public List<Issue> findByAuthor(User user) {
         return storage.values().stream()
-                .filter(i -> i.getReporter().equals(reporter))
+                .filter(i -> i.getReporter().equals(user))
                 .toList();
     }
 

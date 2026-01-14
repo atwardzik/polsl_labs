@@ -15,6 +15,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Class holding all issues
+ *
+ * @author Artur Twardzik
+ * @version 0.6
+ */
 @ApplicationScoped
 public class DatabaseIssueRepository implements IssueRepository {
 
@@ -41,88 +47,97 @@ public class DatabaseIssueRepository implements IssueRepository {
 
     @Override
     public Optional<Issue> findById(UUID id) {
-        EntityManager em = emf.createEntityManager();
-        return Optional.ofNullable(em.find(Issue.class, id));
+        try (EntityManager em = emf.createEntityManager()) {
+            return Optional.ofNullable(em.find(Issue.class, id));
+        }
     }
 
     @Override
     public Optional<Issue> findByTitle(String title) {
-        EntityManager em = emf.createEntityManager();
-        List<Issue> result = em.createQuery(
-                        "SELECT i FROM Issue i WHERE i.title = :title",
-                        Issue.class)
-                .setParameter("title", title)
-                .getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            List<Issue> result = em.createQuery(
+                            "SELECT i FROM Issue i WHERE i.title = :title",
+                            Issue.class)
+                    .setParameter("title", title)
+                    .getResultList();
 
-        return result.stream().findFirst();
+            return result.stream().findFirst();
+        }
     }
 
     @Override
     public List<Issue> findAll() {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                "SELECT i FROM Issue i",
-                Issue.class
-        ).getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                    "SELECT i FROM Issue i",
+                    Issue.class
+            ).getResultList();
+        }
     }
 
     @Override
     public List<Issue> findByStatus(BugStatus status) {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                        "SELECT i FROM Issue i WHERE i.status = :status",
-                        Issue.class)
-                .setParameter("status", status)
-                .getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT i FROM Issue i WHERE i.status = :status",
+                            Issue.class)
+                    .setParameter("status", status)
+                    .getResultList();
+        }
     }
 
     @Override
     public List<Issue> findByPriority(Priority priority) {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                        "SELECT i FROM Issue i WHERE i.priority = :priority",
-                        Issue.class)
-                .setParameter("priority", priority)
-                .getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT i FROM Issue i WHERE i.priority = :priority",
+                            Issue.class)
+                    .setParameter("priority", priority)
+                    .getResultList();
+        }
     }
 
     @Override
-    public List<Issue> findByReporter(User reporter) {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                        "SELECT i FROM Issue i WHERE i.reporter = :reporter",
-                        Issue.class)
-                .setParameter("reporter", reporter)
-                .getResultList();
+    public List<Issue> findByAuthor(User user) {
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT i FROM Issue i WHERE i.reporter = :reporter",
+                            Issue.class)
+                    .setParameter("reporter", user)
+                    .getResultList();
+        }
     }
 
     @Override
     public List<Issue> findCreatedAfter(LocalDateTime date) {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                        "SELECT i FROM Issue i WHERE i.createdAt > :date",
-                        Issue.class)
-                .setParameter("date", date)
-                .getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT i FROM Issue i WHERE i.createdAt > :date",
+                            Issue.class)
+                    .setParameter("date", date)
+                    .getResultList();
+        }
     }
 
     @Override
     public List<Issue> findCreatedBefore(LocalDateTime date) {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                        "SELECT i FROM Issue i WHERE i.createdAt < :date",
-                        Issue.class)
-                .setParameter("date", date)
-                .getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT i FROM Issue i WHERE i.createdAt < :date",
+                            Issue.class)
+                    .setParameter("date", date)
+                    .getResultList();
+        }
     }
 
     @Override
     public List<Issue> findByTitleContaining(String titleFragment) {
-        EntityManager em = emf.createEntityManager();
-        return em.createQuery(
-                        "SELECT i FROM Issue i WHERE LOWER(i.title) LIKE LOWER(:fragment)",
-                        Issue.class)
-                .setParameter("fragment", "%" + titleFragment + "%")
-                .getResultList();
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT i FROM Issue i WHERE LOWER(i.title) LIKE LOWER(:fragment)",
+                            Issue.class)
+                    .setParameter("fragment", "%" + titleFragment + "%")
+                    .getResultList();
+        }
     }
 }
