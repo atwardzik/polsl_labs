@@ -81,6 +81,7 @@ public class EditIssueServlet extends HttpServlet {
             if (description != null) {
                 issue.setDescription(description); //sanitize....?
             }
+
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }

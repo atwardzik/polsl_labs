@@ -1,12 +1,12 @@
 package com.example.bugtracker50;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import model.*;
-import repository.InMemoryIssueRepository;
-import repository.InMemoryUserRepository;
-import repository.IssueRepository;
-import repository.UserRepository;
+import repository.*;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -39,12 +39,25 @@ public class InitializationServlet extends HttpServlet {
 
         var context = getServletContext();
 
-        UserRepository userRepository = new InMemoryUserRepository();
+        EntityManagerFactory emf =
+                Persistence.createEntityManagerFactory("bug_tracker_db");
+
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        em.createNativeQuery("SELECT 1").getSingleResult();
+        em.getTransaction().commit();
+        em.close();
+
+        System.out.println("DATABASE CONNECTED");
+
+//        UserRepository userRepository = new InMemoryUserRepository();
+        UserRepository userRepository = new DatabaseUserRepository();
         UserManager userManager = new UserManager(userRepository);
         User user1 = userManager.registerUser("Artur", "Twardzik", "at", "1234");
         User user2 = userManager.registerUser("Jerzy", "Twardzik", "jt", "abcd");
 
-        IssueRepository issueRepository = new InMemoryIssueRepository();
+//        IssueRepository issueRepository = new InMemoryIssueRepository();
+        IssueRepository issueRepository = new DatabaseIssueRepository();
         IssueManager issueManager = new IssueManager(issueRepository);
         issueManager.createIssue(
                 "Off-by-One Stack Write in syscall handler",

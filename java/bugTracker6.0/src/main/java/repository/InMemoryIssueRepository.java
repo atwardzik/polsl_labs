@@ -8,7 +8,6 @@ import model.User;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class InMemoryIssueRepository implements IssueRepository {
 
@@ -50,35 +49,35 @@ public class InMemoryIssueRepository implements IssueRepository {
     public List<Issue> findByStatus(BugStatus status) {
         return storage.values().stream()
                 .filter(i -> i.getStatus() == status)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<Issue> findByPriority(Priority priority) {
         return storage.values().stream()
                 .filter(i -> i.getPriority() == priority)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<Issue> findByReporter(User reporter) {
         return storage.values().stream()
                 .filter(i -> i.getReporter().equals(reporter))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<Issue> findCreatedAfter(LocalDateTime date) {
         return storage.values().stream()
                 .filter(i -> i.getCreatedAt().isAfter(date))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<Issue> findCreatedBefore(LocalDateTime date) {
         return storage.values().stream()
                 .filter(i -> i.getCreatedAt().isBefore(date))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -86,6 +85,6 @@ public class InMemoryIssueRepository implements IssueRepository {
         String lower = fragment.toLowerCase();
         return storage.values().stream()
                 .filter(i -> i.getTitle().toLowerCase().contains(lower))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

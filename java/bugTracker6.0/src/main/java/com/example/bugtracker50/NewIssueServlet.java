@@ -12,7 +12,6 @@ import model.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 /**
  * NewIssueServlet handles POST requests to create a new issue in the system.
