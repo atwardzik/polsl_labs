@@ -1,11 +1,12 @@
 #include "ast.h"
+#include "compiler.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void print_error(const char *format, ...) {
+static void print_error(const char *format, ...) {
         char buffer[256];
 
         va_list args;
@@ -20,11 +21,6 @@ void print_error(const char *format, ...) {
 /*
  * Visitors
  * */
-
-struct GeneratedAssembly {
-        char *code;
-        size_t length;
-};
 
 struct GeneratedAssembly *create_assembly_buffer(size_t size) {
         char *code = (char *) calloc(sizeof(char) * size, sizeof(char));
@@ -63,29 +59,6 @@ void append_code(struct GeneratedAssembly *assembly, const char *appended_format
 
         va_end(args);
 }
-
-struct VariableDescriptor {
-        enum { SP_RELATIVE, REG } position;
-
-        union {
-                enum { X0, X1, X2, X3, X4, X5, X6, X7 } reg;
-
-                size_t sp_offset;
-        };
-
-        const char *variable_name;
-};
-
-struct VariableDescriptorTable {
-        struct VariableDescriptor **var_desc;
-        size_t size;
-};
-
-constexpr int REG_COUNT = 8;
-
-struct RegisterDescriptorTable {
-        bool reg_used[REG_COUNT];
-};
 
 struct VariableDescriptorTable *create_variable_descriptor_table(size_t size) {
         auto descriptors = (struct VariableDescriptor **) malloc(sizeof(struct VariableDescriptor) * size);

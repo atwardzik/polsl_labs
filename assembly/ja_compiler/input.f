@@ -1,1 +1,1 @@
-foo(x, y, z, t): x + !y - z * t * 2
+f(x, y, z, t): x + !y - z * t

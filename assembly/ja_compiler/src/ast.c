@@ -43,6 +43,7 @@ struct Expr *create_leaf_literal_expr(int leaf_literal) {
 }
 
 static void print_indent(int level) {
+        printf("|");
         for (int i = 0; i < level; ++i) {
                 printf("\t");
         }
@@ -120,4 +121,6 @@ void traverse_function(const struct Function *function) {
         print_indent(1);
         printf("[BODY]:\n");
         traverse_expr(function->body, 2);
+
+        printf("+\n");
 }
