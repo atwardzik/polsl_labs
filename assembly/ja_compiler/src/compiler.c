@@ -1,3 +1,5 @@
+#include "ast.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,51 +16,6 @@ void print_error(const char *format, ...) {
 
         va_end(args);
 }
-
-
-/*
- * Grammar
- * */
-struct Expr {
-        enum { EXPR_LEAF, EXPR_BINARY, EXPR_UNARY } type;
-        enum { OP_ADD, OP_SUB, OP_MUL, OP_NEG } operator;
-        union {
-                struct {
-                        struct Expr *left;
-                        struct Expr *right;
-                } binary;
-
-                struct {
-                        struct Expr *operand;
-                } unary;
-
-                char *leaf_name;
-        };
-};
-
-struct Function {
-        char **param_list;
-        int parameter_count;
-        char *name;
-        struct Expr *expr;
-};
-
-struct FunctionCall {
-        char *name;
-        struct Expr **param_list;
-        int parameter_count;
-};
-
-struct VariableOperation {
-        char *name;
-        enum { OP_EQ, OP_ADDEQ, OP_SUBEQ, OP_MULEQ } operator;
-};
-
-struct ExecUnit {
-        struct Function **functions;
-        struct Expr **body_expressions;
-};
-
 
 /*
  * Visitors
@@ -95,7 +52,7 @@ void resize_if_not_fit(struct GeneratedAssembly *assembly, size_t appended_lengt
 }
 
 void append_code(struct GeneratedAssembly *assembly, const char *appended_format, ...) {
-        va_list(args);
+        va_list (args);
         va_start(args, appended_format);
 
         size_t appended_length = vsnprintf(nullptr, 0, appended_format, args);
@@ -109,10 +66,13 @@ void append_code(struct GeneratedAssembly *assembly, const char *appended_format
 
 struct VariableDescriptor {
         enum { SP_RELATIVE, REG } position;
+
         union {
                 enum { X0, X1, X2, X3, X4, X5, X6, X7 } reg;
+
                 size_t sp_offset;
         };
+
         const char *variable_name;
 };
 
@@ -122,6 +82,7 @@ struct VariableDescriptorTable {
 };
 
 constexpr int REG_COUNT = 8;
+
 struct RegisterDescriptorTable {
         bool reg_used[REG_COUNT];
 };
@@ -175,14 +136,16 @@ int get_reg(struct RegisterDescriptorTable *descriptors) {
         return -1;
 }
 
-/*
+/**
  * Generate assembly code for expressions
  *
  * @param: assembly     generated code
  * @return: register where the result is stored.
  * */
-int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptorTable *var_descriptors,
-               struct RegisterDescriptorTable *reg_descriptors) {
+int visit_expr(
+        struct GeneratedAssembly *assembly, struct Expr *expr, struct VariableDescriptorTable *var_descriptors,
+        struct RegisterDescriptorTable *reg_descriptors
+) {
         if (expr->type == EXPR_LEAF) {
                 struct VariableDescriptor *descriptor = get_variable_position(var_descriptors, expr->leaf_name);
 
@@ -197,7 +160,7 @@ int visit_expr(struct GeneratedAssembly *assembly, struct Expr *expr, struct Var
 
                 return destination_register;
         }
-        else if (expr->type == EXPR_UNARY && expr->operator== OP_NEG) {
+        else if (expr->type == EXPR_UNARY && expr->operator == OP_NEG) {
                 int destination_register = visit_expr(assembly, expr->unary.operand, var_descriptors, reg_descriptors);
 
                 append_code(assembly, "cmp x%i, #0\nbeq .one\nmov x%i, #0\nb .end\n.one:\nmov x%i, #1\n.end:\n",
@@ -258,11 +221,11 @@ char *visit_function(struct Function *fn) {
         size_t stack_shift = 32; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
         append_code(assembly, fn_entrance, stack_shift);
 
-        struct VariableDescriptorTable *var_descriptors = create_variable_descriptor_table(fn->parameter_count);
+        struct VariableDescriptorTable *var_descriptors = create_variable_descriptor_table(fn->param_count);
 
         const char *save_reg = "str x%i, [sp, #%i]\n";
-        const size_t total_offset = sizeof(size_t) * fn->parameter_count;
-        for (int i = 0; i < fn->parameter_count; ++i) {
+        const size_t total_offset = sizeof(size_t) * fn->param_count;
+        for (int i = 0; i < fn->param_count; ++i) {
                 if (i == 4) {
                         break;
                 }
@@ -279,9 +242,9 @@ char *visit_function(struct Function *fn) {
                 var_descriptors->var_desc[i] = descriptor;
         }
 
-        if (fn->parameter_count > 4) {
+        if (fn->param_count > 4) {
                 size_t stack_parameters_offset = stack_shift;
-                for (int i = 4; i < fn->parameter_count; ++i) {
+                for (int i = 4; i < fn->param_count; ++i) {
                         auto descriptor = (struct VariableDescriptor *) malloc(sizeof(struct VariableDescriptor));
                         descriptor->position = SP_RELATIVE;
                         descriptor->sp_offset = stack_parameters_offset + i * sizeof(size_t);
@@ -293,7 +256,7 @@ char *visit_function(struct Function *fn) {
 
 
         struct RegisterDescriptorTable *reg_descriptors = create_register_descriptor_table();
-        int ret_pos = visit_expr(assembly, fn->expr, var_descriptors, reg_descriptors);
+        int ret_pos = visit_expr(assembly, fn->body, var_descriptors, reg_descriptors);
         if (ret_pos) {
                 append_code(assembly, "mov x0, x%i\n", ret_pos);
         }
@@ -310,52 +273,55 @@ char *visit_function(struct Function *fn) {
         return code;
 }
 
+#if 0
 int main(void) {
         // atom expressions - leafs
         struct Expr leaf_x = {
-                        .type = EXPR_LEAF,
-                        .leaf_name = "x",
+                .type = EXPR_LEAF,
+                .leaf_name = "x",
         };
 
         struct Expr leaf_y = {
-                        .type = EXPR_LEAF,
-                        .leaf_name = "y",
+                .type = EXPR_LEAF,
+                .leaf_name = "y",
         };
 
         struct Expr leaf_z = {
-                        .type = EXPR_LEAF,
-                        .leaf_name = "z",
+                .type = EXPR_LEAF,
+                .leaf_name = "z",
         };
 
 
         struct Expr leaf_t = {
-                        .type = EXPR_LEAF,
-                        .leaf_name = "t",
+                .type = EXPR_LEAF,
+                .leaf_name = "t",
         };
 
         // combined expressions - operations
 
         struct Expr unary_expr = {
-                        .type = EXPR_UNARY,
-                        .operator= OP_NEG,
-                        .unary = {&leaf_x},
+                .type = EXPR_UNARY,
+                .operator = OP_NEG,
+                .unary = {&leaf_x},
         };
 
         struct Expr binary_expr = {
-                        .type = EXPR_BINARY,
-                        .operator= OP_ADD,
-                        .binary = {&leaf_x, &leaf_y},
+                .type = EXPR_BINARY,
+                .operator = OP_ADD,
+                .binary = {&leaf_x, &leaf_y},
 
         };
 
         struct Expr complex_expr = {
-                        .type = EXPR_BINARY,
-                        .operator= OP_ADD,
-                        .binary = {&leaf_y, &unary_expr},
+                .type = EXPR_BINARY,
+                .operator = OP_ADD,
+                .binary = {&leaf_y, &unary_expr},
         };
 
-        struct Expr multiply_expr = {.type = EXPR_BINARY, .operator= OP_MUL, .binary = {&leaf_z, &leaf_t}};
-        struct Expr combined_expr = {.type = EXPR_BINARY, .operator= OP_SUB, .binary = {&complex_expr, &multiply_expr}};
+        struct Expr multiply_expr = {.type = EXPR_BINARY, .operator = OP_MUL, .binary = {&leaf_z, &leaf_t}};
+        struct Expr combined_expr = {
+                .type = EXPR_BINARY, .operator = OP_SUB, .binary = {&complex_expr, &multiply_expr}
+        };
 
 
         char *fn_params[] = {"x", "y", "z", "t"};
@@ -429,3 +395,4 @@ int main(void) {
 
         return 0;
 }
+#endif
