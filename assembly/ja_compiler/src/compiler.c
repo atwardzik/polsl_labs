@@ -109,6 +109,10 @@ int get_reg(struct RegisterDescriptorTable *descriptors) {
         return -1;
 }
 
+void free_reg(struct RegisterDescriptorTable *descriptors, int reg) {
+        descriptors->reg_used[reg] = false;
+}
+
 /**
  * Generate assembly code for expressions
  *
@@ -129,15 +133,24 @@ int visit_expr(
 
                 int destination_register = get_reg(reg_descriptors);
 
-                append_code(assembly, "ldr x%i, [sp, #%zu]\n", destination_register, descriptor->sp_offset);
+                append_code(assembly, "ldr\tx%i, [sp, #%zu]\n", destination_register, descriptor->sp_offset);
+
+                return destination_register;
+        }
+        else if (expr->type == EXPR_LEAF_LITERAL) {
+                int destination_register = get_reg(reg_descriptors);
+
+                append_code(assembly, "movs\tx%i, #%i\n", destination_register, expr->leaf_literal);
 
                 return destination_register;
         }
         else if (expr->type == EXPR_UNARY && expr->operator == OP_NEG) {
                 int destination_register = visit_expr(assembly, expr->unary.operand, var_descriptors, reg_descriptors);
 
-                append_code(assembly, "cmp x%i, #0\nbeq .one\nmov x%i, #0\nb .end\n.one:\nmov x%i, #1\n.end:\n",
-                            destination_register, destination_register, destination_register);
+                append_code(assembly, "cmp\tx%i, #0\n", destination_register);
+                append_code(assembly, "ite\teq\n");
+                append_code(assembly, "movseq\tx%i, #1\n", destination_register);
+                append_code(assembly, "movsne\tx%i, #0\n", destination_register);
 
                 return destination_register;
         }
@@ -148,7 +161,8 @@ int visit_expr(
                 int left_storage_register = get_reg(reg_descriptors);
 
                 if (first_destination_register != left_storage_register) {
-                        append_code(assembly, "mov x%i, x%i\n", left_storage_register, first_destination_register);
+                        append_code(assembly, "mov\tx%i, x%i\n", left_storage_register, first_destination_register);
+                        free_reg(reg_descriptors, first_destination_register);
                 }
 
 
@@ -157,15 +171,15 @@ int visit_expr(
 
                 switch (expr->operator) {
                         case OP_ADD:
-                                append_code(assembly, "add x%i, x%i, x%i\n", left_storage_register,
+                                append_code(assembly, "add\tx%i, x%i, x%i\n", left_storage_register,
                                             left_storage_register, second_destination_register);
                                 break;
                         case OP_SUB:
-                                append_code(assembly, "sub x%i, x%i, x%i\n", left_storage_register,
+                                append_code(assembly, "sub\tx%i, x%i, x%i\n", left_storage_register,
                                             left_storage_register, second_destination_register);
                                 break;
                         case OP_MUL:
-                                append_code(assembly, "mul x%i, x%i, x%i\n", left_storage_register,
+                                append_code(assembly, "mul\tx%i, x%i, x%i\n", left_storage_register,
                                             left_storage_register, second_destination_register);
                                 break;
                         case OP_NEG:
@@ -173,6 +187,7 @@ int visit_expr(
                                 break;
                 }
 
+                free_reg(reg_descriptors, second_destination_register);
                 return left_storage_register;
         }
 
@@ -190,13 +205,13 @@ char *visit_function(struct Function *fn) {
         // Function calls CANNOT be made (for now) from other function,
         // due to the link register not being saved.
 
-        const char *fn_entrance = "sub sp, sp, #%i\n";
+        const char *fn_entrance = "sub\tsp, sp, #%i\n";
         size_t stack_shift = 32; // ((fn->parameter_count * sizeof(int)) / 16 + 1) * 16;
         append_code(assembly, fn_entrance, stack_shift);
 
         struct VariableDescriptorTable *var_descriptors = create_variable_descriptor_table(fn->param_count);
 
-        const char *save_reg = "str x%i, [sp, #%i]\n";
+        const char *save_reg = "str\tx%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(size_t) * fn->param_count;
         for (int i = 0; i < fn->param_count; ++i) {
                 if (i == 4) {
@@ -231,7 +246,7 @@ char *visit_function(struct Function *fn) {
         struct RegisterDescriptorTable *reg_descriptors = create_register_descriptor_table();
         int ret_pos = visit_expr(assembly, fn->body, var_descriptors, reg_descriptors);
         if (ret_pos) {
-                append_code(assembly, "mov x0, x%i\n", ret_pos);
+                append_code(assembly, "mov\tx0, x%i\n", ret_pos);
         }
         append_code(assembly, "ret\n");
 
