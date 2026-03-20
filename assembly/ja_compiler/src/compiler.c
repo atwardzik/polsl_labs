@@ -133,24 +133,24 @@ int visit_expr(
 
                 int destination_register = get_reg(reg_descriptors);
 
-                append_code(assembly, "ldr\tx%i, [sp, #%zu]\n", destination_register, descriptor->sp_offset);
+                append_code(assembly, "ldr\tr%i, [sp, #%zu]\n", destination_register, descriptor->sp_offset);
 
                 return destination_register;
         }
         else if (expr->type == EXPR_LEAF_LITERAL) {
                 int destination_register = get_reg(reg_descriptors);
 
-                append_code(assembly, "movs\tx%i, #%i\n", destination_register, expr->leaf_literal);
+                append_code(assembly, "movs\tr%i, #%i\n", destination_register, expr->leaf_literal);
 
                 return destination_register;
         }
         else if (expr->type == EXPR_UNARY && expr->operator == OP_NEG) {
                 int destination_register = visit_expr(assembly, expr->unary.operand, var_descriptors, reg_descriptors);
 
-                append_code(assembly, "cmp\tx%i, #0\n", destination_register);
+                append_code(assembly, "cmp\tr%i, #0\n", destination_register);
                 append_code(assembly, "ite\teq\n");
-                append_code(assembly, "movseq\tx%i, #1\n", destination_register);
-                append_code(assembly, "movsne\tx%i, #0\n", destination_register);
+                append_code(assembly, "movseq\tr%i, #1\n", destination_register);
+                append_code(assembly, "movsne\tr%i, #0\n", destination_register);
 
                 return destination_register;
         }
@@ -161,7 +161,7 @@ int visit_expr(
                 int left_storage_register = get_reg(reg_descriptors);
 
                 if (first_destination_register != left_storage_register) {
-                        append_code(assembly, "mov\tx%i, x%i\n", left_storage_register, first_destination_register);
+                        append_code(assembly, "mov\tr%i, r%i\n", left_storage_register, first_destination_register);
                         free_reg(reg_descriptors, first_destination_register);
                 }
 
@@ -171,15 +171,15 @@ int visit_expr(
 
                 switch (expr->operator) {
                         case OP_ADD:
-                                append_code(assembly, "add\tx%i, x%i, x%i\n", left_storage_register,
+                                append_code(assembly, "add\tr%i, r%i, r%i\n", left_storage_register,
                                             left_storage_register, second_destination_register);
                                 break;
                         case OP_SUB:
-                                append_code(assembly, "sub\tx%i, x%i, x%i\n", left_storage_register,
+                                append_code(assembly, "sub\tr%i, r%i, r%i\n", left_storage_register,
                                             left_storage_register, second_destination_register);
                                 break;
                         case OP_MUL:
-                                append_code(assembly, "mul\tx%i, x%i, x%i\n", left_storage_register,
+                                append_code(assembly, "mul\tr%i, r%i, r%i\n", left_storage_register,
                                             left_storage_register, second_destination_register);
                                 break;
                         case OP_NEG:
@@ -197,7 +197,10 @@ int visit_expr(
 char *visit_function(struct Function *fn) {
         struct GeneratedAssembly *assembly = create_assembly_buffer(1024);
 
-        const char *fn_header = ".global _%s\n.align 4\n_%s:\n";
+        const char *file_header = ".cpu cortex-m33\n.thumb\n.syntax unified\n\n";
+        append_code(assembly, file_header);
+
+        const char *fn_header = ".global %s\n.align 4\n%s:\n";
         append_code(assembly, fn_header, fn->name, fn->name);
 
         // Calling convention in registers, r0, r1, r2, r3, then stack.
@@ -211,7 +214,7 @@ char *visit_function(struct Function *fn) {
 
         struct VariableDescriptorTable *var_descriptors = create_variable_descriptor_table(fn->param_count);
 
-        const char *save_reg = "str\tx%i, [sp, #%i]\n";
+        const char *save_reg = "str\tr%i, [sp, #%i]\n";
         const size_t total_offset = sizeof(size_t) * fn->param_count;
         for (int i = 0; i < fn->param_count; ++i) {
                 if (i == 4) {
@@ -246,9 +249,9 @@ char *visit_function(struct Function *fn) {
         struct RegisterDescriptorTable *reg_descriptors = create_register_descriptor_table();
         int ret_pos = visit_expr(assembly, fn->body, var_descriptors, reg_descriptors);
         if (ret_pos) {
-                append_code(assembly, "mov\tx0, x%i\n", ret_pos);
+                append_code(assembly, "mov\tr0, r%i\n", ret_pos);
         }
-        append_code(assembly, "ret\n");
+        append_code(assembly, "bx\tlr\n");
 
         char *code = assembly->code;
         free(assembly);

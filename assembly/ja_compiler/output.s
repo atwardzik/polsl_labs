@@ -1,26 +1,30 @@
-.global _foo
+.cpu cortex-m33
+.thumb
+.syntax unified
+
+.global foo
 .align 4
-_foo:
+foo:
 sub	sp, sp, #32
-str	x0, [sp, #24]
-str	x1, [sp, #16]
-str	x2, [sp, #8]
-str	x3, [sp, #0]
-ldr	x0, [sp, #24]
-mov	x1, x0
-ldr	x0, [sp, #16]
-cmp	x0, #0
+str	r0, [sp, #24]
+str	r1, [sp, #16]
+str	r2, [sp, #8]
+str	r3, [sp, #0]
+ldr	r0, [sp, #24]
+mov	r1, r0
+ldr	r0, [sp, #16]
+cmp	r0, #0
 ite	eq
-movseq	x0, #1
-movsne	x0, #0
-add	x1, x1, x0
-mov	x0, x1
-ldr	x1, [sp, #8]
-mov	x2, x1
-ldr	x1, [sp, #0]
-mul	x2, x2, x1
-mov	x1, x2
-movs	x2, #2
-mul	x1, x1, x2
-sub	x0, x0, x1
-ret
+movseq	r0, #1
+movsne	r0, #0
+add	r1, r1, r0
+mov	r0, r1
+ldr	r1, [sp, #8]
+mov	r2, r1
+ldr	r1, [sp, #0]
+mul	r2, r2, r1
+mov	r1, r2
+movs	r2, #2
+mul	r1, r1, r2
+sub	r0, r0, r1
+bx	lr
